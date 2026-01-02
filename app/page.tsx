@@ -1,7 +1,4 @@
-import Image from "next/image";
 import AuthForm from "./components/AuthForm";
-import Students from '@/public/images/graduation.jpg'
-import Logo from '@/public/images/logo.png'
 import { GraduationCap } from "lucide-react";
 import { ThemeToggle } from "./components/ThemeToggle";
 

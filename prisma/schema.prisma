@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Staff {
+  id          Int        @id @default(autoincrement())
+  createdAt   DateTime   @default(now())
+  email       String     @unique
+  firstName   String
+  secondName  String
+  phoneNumber String     @unique
+  password    String
+  userType    UserType   @default(LECTURER)
+  department  Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  departmentId Int 
+  units       Unit[]
+  school      School     @relation(fields: [schoolId], references: [id], onDelete: Cascade) // Relationship to School
+  schoolId    Int
+  userStatus  UserStatus @default(inactive)
+}
+
+model Student {
+  id          Int        @id @default(autoincrement())
+  createdAt   DateTime   @default(now())
+  email       String     @unique
+  firstName   String
+  secondName  String
+  password    String
+  regNo       String     @unique
+  yearOfStudy Int?
+  department  Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  departmentId Int
+  course      Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId    Int 
+  reports     MissingMarksReport[]
+  userType    UserType @default(STUDENT)
+  userStatus  UserStatus @default(active)
+}
+
+
+model School {
+  id          Int         @id @default(autoincrement())
+  name        String
+  abbreviation String     @unique
+  departments Department[]
+  staff       Staff[]
+}
+
+model Department {
+  id         Int      @id @default(autoincrement())
+  name       String
+  school     School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  schoolId   Int
+  students   Student[] 
+  staffS      Staff[]
+  courses    Course[]   
+}
+
+model Course {
+  id          Int      @id @default(autoincrement())
+  name        String
+  department  Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  departmentId Int
+  students    Student[] 
+  units       UnitCourse[]    
+}
+
+model Unit {
+  id            Int      @id @default(autoincrement())
+  name          String   
+  code          String   
+  academicYear  String   
+  yearOfStudy   Int      
+  semester      Semester @default(SEMESTER1)
+  courses       UnitCourse[]
+  lecturer      Staff    @relation(fields: [lecturerId], references: [id], onDelete: Cascade)
+  lecturerId    Int
+  missingMarks  MissingMarksReport[]
+}
+
+model UnitCourse {
+  unitId   Int
+  courseId Int
+  unit     Unit   @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@id([unitId, courseId]) // Composite primary key
+}
+
+model MissingMarksReport {
+  id           Int      @id @default(autoincrement())
+  createdAt    DateTime @default(now())
+  unitName     String
+  unitCode     String
+  lecturerName String
+  academicYear String
+  examType     ExamType
+  reportStatus ReportStatus @default(PENDING)
+  yearOfStudy  Int
+  semester     Semester
+  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId    Int
+  unit         Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade) 
+  unitId       Int      
+}
+
+enum UserType {
+  SUPERADMIN
+  ADMIN
+  DEAN
+  COD
+  LECTURER
+  STUDENT
+}
+
+enum ExamType{
+  MAIN
+  SPECIAL
+  SUPPLIMENTARY
+  CAT
+  MAIN_AND_CAT
+}
+
+enum Semester{
+  SEMESTER1
+  SEMESTER2
+  SEMESTER3
+}
+
+enum ReportStatus{
+  PENDING
+  MARK_FOUND
+  MARK_NOT_FOUND
+  FOR_FURTHER_INVESTIGATION
+}
+
+enum UserStatus{
+  active
+  inactive
+}
