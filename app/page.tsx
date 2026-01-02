@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <>
       <div className="w-full h-screen flex items-center justify-center">
-        <div className="absolute top-0 right-0 border-2 border-gray-100 rounded-lg m-4 ">
+        <div className="absolute top-0 right-0 m-4">
           <ThemeToggle/>
         </div>
           <div className="w-full h-full flex flex-col items-center justify-center">
