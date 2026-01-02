@@ -12,11 +12,11 @@ import {
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
 import { fetchStaffProfile, fetchStudentProfile } from "@/app/lib/actions";
-import { UserStatus, UserType } from "@prisma/client";
 import { LogOut, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { UserStatus, UserType } from "../generated/prisma/enums";
 
 interface StaffProfile {
   id: number;
