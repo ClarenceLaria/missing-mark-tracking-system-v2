@@ -24,10 +24,10 @@ model Staff {
   userType    UserType   @default(LECTURER)
   department  Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   departmentId Int 
-  units       Unit[]
   school      School     @relation(fields: [schoolId], references: [id], onDelete: Cascade) // Relationship to School
   schoolId    Int
   userStatus  UserStatus @default(inactive)
+  units       Unit[]
 }
 
 model Student {
@@ -43,14 +43,16 @@ model Student {
   departmentId Int
   course      Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId    Int 
-  reports     MissingMarksReport[]
   userType    UserType @default(STUDENT)
   userStatus  UserStatus @default(active)
+  examMarks   ExamMark[]
+  reports     MissingMarksReport[]
+  semesterRegistrations SemesterRegistration[]
 }
-
 
 model School {
   id          Int         @id @default(autoincrement())
+  createdAt   DateTime @default(now())
   name        String
   abbreviation String     @unique
   departments Department[]
@@ -59,6 +61,7 @@ model School {
 
 model Department {
   id         Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
   name       String
   school     School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   schoolId   Int
@@ -69,6 +72,7 @@ model Department {
 
 model Course {
   id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
   name        String
   department  Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   departmentId Int
@@ -78,15 +82,18 @@ model Course {
 
 model Unit {
   id            Int      @id @default(autoincrement())
-  name          String   
-  code          String   
+  createdAt   DateTime @default(now())
+  unitName      String   
+  unitCode      String   
   academicYear  String   
   yearOfStudy   Int      
   semester      Semester @default(SEMESTER1)
-  courses       UnitCourse[]
   lecturer      Staff    @relation(fields: [lecturerId], references: [id], onDelete: Cascade)
   lecturerId    Int
+  courses       UnitCourse[]
+  marks         ExamMark[]
   missingMarks  MissingMarksReport[]
+  registeredUnits RegisteredUnit[]
 }
 
 model UnitCourse {
@@ -98,22 +105,71 @@ model UnitCourse {
   @@id([unitId, courseId]) // Composite primary key
 }
 
-model MissingMarksReport {
-  id           Int      @id @default(autoincrement())
-  createdAt    DateTime @default(now())
-  unitName     String
-  unitCode     String
-  lecturerName String
-  academicYear String
-  examType     ExamType
-  reportStatus ReportStatus @default(PENDING)
-  yearOfStudy  Int
-  semester     Semester
-  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId    Int
-  unit         Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade) 
-  unitId       Int      
+model SemesterRegistration {
+  id            Int      @id @default(autoincrement())
+  studentId     Int
+  academicYear  String
+  semester      Semester
+  feesCleared   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  student       Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  units         RegisteredUnit[]
+
+  @@unique([studentId, academicYear, semester])
 }
+
+model RegisteredUnit {
+  registrationId Int
+  unitId         Int
+
+  registration   SemesterRegistration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  unit           Unit @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@id([registrationId, unitId])
+}
+
+model ExamMark {
+  createdAt   DateTime @default(now())
+  unitId      Int
+  studentId   Int
+  examResult  Int
+  catResult   Int
+
+  unit        Unit      @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)  
+  @@id([unitId, studentId])
+}
+
+model MissingMarksReport {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  studentId     Int
+  unitId        Int  
+  examType      ExamType
+  academicYear  String
+  semester      Semester
+  yearOfStudy   Int
+  reportStatus  ReportStatus @default(PENDING)
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  unit          Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade) 
+  notifications Notification[]
+   @@unique([studentId, unitId, examType, academicYear, semester])
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  recipientId Int
+  reportId    Int
+  role        UserType
+  message     String
+  sentAt      DateTime @default(now())
+  read        Boolean  @default(false)
+
+  report      MissingMarksReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}
+
 
 enum UserType {
   SUPERADMIN
@@ -124,7 +180,7 @@ enum UserType {
   STUDENT
 }
 
-enum ExamType{
+enum ExamType {
   MAIN
   SPECIAL
   SUPPLIMENTARY
@@ -132,20 +188,25 @@ enum ExamType{
   MAIN_AND_CAT
 }
 
-enum Semester{
+enum Semester {
   SEMESTER1
   SEMESTER2
   SEMESTER3
 }
 
-enum ReportStatus{
+enum ReportStatus {
   PENDING
   MARK_FOUND
   MARK_NOT_FOUND
   FOR_FURTHER_INVESTIGATION
 }
 
-enum UserStatus{
+enum UserStatus {
   active
   inactive
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
 }
