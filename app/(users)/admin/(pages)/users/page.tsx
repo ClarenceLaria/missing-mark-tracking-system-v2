@@ -1,13 +1,13 @@
 "use client";
 
-import { Button } from "@/app/Components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/app/Components/ui/card";
+} from "@/app/components/ui/card";
 import {
   Table,
   TableBody,
@@ -15,32 +15,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/app/Components/ui/table";
-import { CreateUserDialog } from "@/app/(users)/Admin/Components/admin/create-user-dialog";
+} from "@/app/components/ui/table";
+import { CreateUserDialog } from "@/app/(users)/admin/components/admin/create-user-dialog";
 import { useEffect, useState } from "react";
 import { UserPlus, PenSquare, Trash2 } from "lucide-react";
-import { Badge } from "@/app/Components/ui/badge";
+import { Badge } from "@/app/components/ui/badge";
 import { fetchUniversityUsersArray } from "@/app/lib/actions";
-import { UserStatus, UserType } from "@prisma/client";
-
-// const users = [
-//   {
-//     id: 1,
-//     name: "John Doe",
-//     email: "john.doe@university.edu",
-//     role: "DEAN",
-//     school: "School of Computing",
-//     status: "active",
-//   },
-//   {
-//     id: 2,
-//     name: "Jane Smith",
-//     email: "jane.smith@university.edu",
-//     role: "LECTURER",
-//     school: "School of Computing",
-//     status: "active",
-//   },
-// ];
+import { UserStatus, UserType } from '@/app/generated/prisma/enums';
 
 interface Users {
   id: number;

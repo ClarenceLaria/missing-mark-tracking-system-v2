@@ -1,13 +1,13 @@
 "use client";
 
-import { Button } from "@/app/Components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/app/Components/ui/card";
+} from "@/app/components/ui/card";
 import {
   Table,
   TableBody,
@@ -15,12 +15,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/app/Components/ui/table";
+} from "@/app/components/ui/table";
 import { useEffect, useState } from "react";
 import { BookOpen, PenSquare, Trash2, UserPlus } from "lucide-react";
-import { Badge } from "@/app/Components/ui/badge";
-import { CreateProgramDialog } from "../../Components/admin/create-program-dialog";
-import Loader from "@/app/Components/Loader";
+import { Badge } from "@/app/components/ui/badge";
+import { CreateProgramDialog } from "../../components/admin/create-program-dialog";
+import Loader from "@/app/components/Loader";
 import { fetchPrograms } from "@/app/lib/actions";
 
 const courses = [

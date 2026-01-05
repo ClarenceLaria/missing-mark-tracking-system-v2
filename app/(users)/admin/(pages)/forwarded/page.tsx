@@ -1,11 +1,11 @@
 'use client'
 import React, { Suspense, useEffect, useState } from 'react';
-import Table from '@/app/(users)/Admin/Components/Table'
-import Search from '@/app/(users)/Student/Components/Search';
-import { ExamType, ReportStatus, Semester } from '@prisma/client';
+import Table from '@/app/(users)/admin/components/Table'
+import Search from '@/app/(users)/student/components/Search';
+import { ExamType, ReportStatus, Semester, UserType } from '@/app/generated/prisma/enums';
 import { useSession } from 'next-auth/react';
 import { fetchSchoolReports, fetchUniversityMissingReports } from '@/app/lib/actions';
-import Loader from '@/app/Components/Loader';
+import Loader from '@/app/components/Loader';
 
 const Loading = () => <div>Loading...</div>;
 interface missingReport {
@@ -37,7 +37,7 @@ export default function Page() {
         setLoading(true);
         const result = await fetchSchoolReports(email);
         const forwardedReports = result?.forwardedReports || [];
-        setReports(forwardedReports);
+        // setReports(forwardedReports);
         setLoading(false);
       }catch(error){
         console.log("Error fetching reports: ", error);
@@ -53,7 +53,7 @@ export default function Page() {
       try{
         setLoading(true);
         const result = await fetchUniversityMissingReports();
-        setAdminReports(result?.forInvestigation || []);
+        // setAdminReports(result?.forInvestigation || []);
         setLoading(false);
       }catch(error){
         console.error("Error fetching Reports: ", error)

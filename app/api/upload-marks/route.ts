@@ -5,12 +5,6 @@ import path from "path";
 import formidable from "formidable";
 import { prisma } from "@/app/lib/prismadb";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 export async function POST(req: Request) {
   if (req.method !== 'POST') {
     return new Response (JSON.stringify({ message: 'Method Not Allowed'}), {status: 405});

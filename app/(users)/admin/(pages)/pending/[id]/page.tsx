@@ -1,11 +1,10 @@
 'use client'
-import Input from '@/app/Components/Input'
-import Loader from '@/app/Components/Loader';
+import Input from '@/app/components/Input'
+import Loader from '@/app/components/Loader';
 import { fetchDepartmentSingleReport, fetchSingleReport, fetchSingleUnclearedReport } from '@/app/lib/actions';
-import { ExamType, ReportStatus, Semester, UserType } from '@prisma/client';
+import { ExamType, ReportStatus, Semester, UserType } from '@/app/generated/prisma/enums';
 import { useSession } from 'next-auth/react';
 import React, { useEffect, useState } from 'react'
-import toast from 'react-hot-toast';
 
 interface missingReport {
   academicYear: string;
@@ -61,7 +60,7 @@ export default function Page({ params }: { params: { id: string } }) {
         setLoading(true)
         const singleReport = await fetchDepartmentSingleReport(id);
         if (singleReport) {
-          setReport(singleReport.report);
+          // setReport(singleReport.report);
           setDept(singleReport.dept);
           setSchool(singleReport.school);
           setStudent(singleReport.student ?? null);

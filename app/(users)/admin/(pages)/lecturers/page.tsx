@@ -1,11 +1,11 @@
 'use client'
 import React, {Suspense, useEffect, useState} from 'react'
-import Table from '@/app/Components/LecturersTable';
-import Search from '@/app/(users)/Student/Components/Search'
+import Table from '@/app/components/LecturersTable';
+import Search from '@/app/(users)/student/components/Search'
 import { useSession } from 'next-auth/react';
 import { fetchSchoolUsers, fetchUniversityUsers } from '@/app/lib/actions';
-import { UserType } from '@prisma/client';
-import Loader from '@/app/Components/Loader';
+import Loader from '@/app/components/Loader';
+import { UserType } from '@/app/generated/prisma/enums';
 
 interface Lecturer {
   id: number;

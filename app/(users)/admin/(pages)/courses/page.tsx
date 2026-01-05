@@ -1,13 +1,13 @@
 "use client";
 
-import { Button } from "@/app/Components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/app/Components/ui/card";
+} from "@/app/components/ui/card";
 import {
   Table,
   TableBody,
@@ -15,12 +15,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/app/Components/ui/table";
-import { CreateCourseDialog } from "@/app/(users)/Admin/Components/admin/create-course-dialog";
-import { AssignCourseDialog } from "@/app/(users)/Admin/Components/admin/assign-course-dialog";
+} from "@/app/components/ui/table";
+import { CreateCourseDialog } from "@/app/(users)/admin/components/admin/create-course-dialog";
+import { AssignCourseDialog } from "@/app/(users)/admin/components/admin/assign-course-dialog";
 import { useEffect, useState } from "react";
 import { BookOpen, PenSquare, Trash2, UserPlus } from "lucide-react";
-import { Badge } from "@/app/Components/ui/badge";
+import { Badge } from "@/app/components/ui/badge";
 import { fetchUnitsForAdmin } from "@/app/lib/actions";
 
 

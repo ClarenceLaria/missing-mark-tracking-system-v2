@@ -1,13 +1,13 @@
 "use client";
 
-import { Button } from "@/app/Components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/app/Components/ui/card";
+} from "@/app/components/ui/card";
 import {
   Table,
   TableBody,
@@ -15,12 +15,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/app/Components/ui/table";
+} from "@/app/components/ui/table";
 import { useEffect, useState } from "react";
 import { School, PenSquare, Trash2 } from "lucide-react";
-import { CreateSchoolDialog } from "@/app/(users)/Admin/Components/admin/create-school-dialog";
+import { CreateSchoolDialog } from "@/app/(users)/admin/components/admin/create-school-dialog";
 import { fetchSchoolDetails, fetchSchools } from "@/app/lib/actions";
-import { DeleteSchoolDialog } from "../../Components/admin/delete-school-dialog";
+import { DeleteSchoolDialog } from "../../components/admin/delete-school-dialog";
 
 const schools = [
   {

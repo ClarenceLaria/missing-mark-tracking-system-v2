@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/app/Components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/app/Components/ui/dialog";
+} from "@/app/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -16,20 +16,20 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/app/Components/ui/form";
-import { Input } from "@/app/Components/ui/input";
+} from "@/app/components/ui/form";
+import { Input } from "@/app/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/app/Components/ui/select";
+} from "@/app/components/ui/select";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
-import { CourseList } from "@/app/Components/lecturer/course-list";
+import { CourseList } from "@/app/components/lecturer/course-list";
 import toast from "react-hot-toast";
 import { fetchDepartmentsBySchoolId, fetchProgramsBySchoolId, fetchSchools } from "@/app/lib/actions";
 

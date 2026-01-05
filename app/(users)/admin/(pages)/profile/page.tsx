@@ -2,12 +2,12 @@
 import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
 import dp from '@/public/images/ProfilePic.jpeg'
-import Input from '@/app/Components/Input'
-import Button from '@/app/Components/Button'
+import Input from '@/app/components/Input'
+import Button from '@/app/components/Button'
 import { useSession } from 'next-auth/react'
 import { fetchStaffProfile } from '@/app/lib/actions'
-import { UserType } from '@prisma/client'
-import Loader from '@/app/Components/Loader'
+import Loader from '@/app/components/Loader'
+import { UserType } from '@/app/generated/prisma/enums'
 
 interface StaffProfile {
     id: number;

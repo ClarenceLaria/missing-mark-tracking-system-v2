@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/app/Components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/app/Components/ui/dialog";
+} from "@/app/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -16,21 +16,21 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/app/Components/ui/form";
+} from "@/app/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/app/Components/ui/select";
+} from "@/app/components/ui/select";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { fetchUniversityUsers } from "@/app/lib/actions";
-import { UserStatus, UserType } from "@prisma/client";
 import toast from "react-hot-toast";
+import { UserStatus, UserType } from "@/app/generated/prisma/enums";
 
 const formSchema = z.object({
   academicYear: z.string().min(1, "Academic year is required"),
@@ -128,7 +128,7 @@ export function AssignCourseDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-425px">
         <DialogHeader>
           <DialogTitle>Assign Course</DialogTitle>
           <DialogDescription>
