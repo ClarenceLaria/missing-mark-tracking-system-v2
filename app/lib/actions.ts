@@ -444,8 +444,8 @@ export async function fetchLecturerUnits(){
             
             return {
               id: unit.id,
-              name: unit.name,
-              code: unit.code,
+              name: unit.unitName,
+              code: unit.unitCode,
               year: unit.academicYear,
               totalStudents,
             };
@@ -1508,8 +1508,8 @@ export async function fetchDepartmentsBySchoolId(schoolId: number) {
       
             return {
               unitId: unit.id,
-              unitName: unit.name,
-              unitCode: unit.code,
+              unitName: unit.unitName,
+              unitCode: unit.unitCode,
               academicYear: unit.academicYear,
               schoolName: schoolName,
               courses: allCourses.map((course) => course.name), // Course names
@@ -1572,8 +1572,8 @@ export async function fetchDepartmentsBySchoolId(schoolId: number) {
       
             return {
               unitId: unit.id,
-              unitName: unit.name,
-              unitCode: unit.code,
+              unitName: unit.unitName,
+              unitCode: unit.unitCode,
               academicYear: unit.academicYear,
               courses: allCourses.map((course) => course.name), // Course names
               lecturer: `${unit.lecturer.firstName} ${unit.lecturer.secondName}`, // Lecturer name
@@ -1635,8 +1635,8 @@ export async function fetchDepartmentsBySchoolId(schoolId: number) {
       
             return {
               unitId: unit.id,
-              unitName: unit.name,
-              unitCode: unit.code,
+              unitName: unit.unitName,
+              unitCode: unit.unitCode,
               academicYear: unit.academicYear,
               courses: allCourses.map((course) => course.name), // Course names
               lecturer: `${unit.lecturer.firstName} ${unit.lecturer.secondName}`, // Lecturer name
