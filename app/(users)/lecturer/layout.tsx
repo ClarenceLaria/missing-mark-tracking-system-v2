@@ -23,29 +23,18 @@ export default async function StudentLayout({
   }
   const userType =session?.userType
   if (userType === 'STUDENT') {
-    redirect('/Student/home');
+    redirect('/student/home');
   } else if (userType === 'COD') {
     redirect('/cod');
   } else if (userType === 'ADMIN') {
-    redirect('/Admin');
+    redirect('/admin');
   } else if (userType === 'DEAN'){
     redirect('/dean');
   } else if (userType === 'SUPERADMIN') {
-    redirect('/SuperAdmin');
+    redirect('/superadmin');
   }
   return (
     <>
-      {/* <div className="w-screen h-screen flex flex-col overflow-hidden">
-          <div className={clsx(`w-full bg-gray-200 shadow-md h-[10vh]`)}>
-              <NavBar></NavBar>
-          </div>
-          <div className="flex flex-row">
-            <div className="h-screen px-4 w-[15vw] bg-sky-400">
-              <SideNav></SideNav>
-            </div>
-            <div className="w-full h-full">{children}</div>
-          </div>
-      </div> */}
       <ThemeProvider
         attribute="class"
         defaultTheme="light"

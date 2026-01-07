@@ -31,15 +31,15 @@ export default async function StudentLayout({
   }
   const userType =session?.userType
   if (userType === 'LECTURER') {
-    redirect('/Lecturer');
+    redirect('/lecturer');
   } else if (userType === 'COD') {
     redirect('/cod');
   } else if (userType === 'ADMIN') {
-    redirect('/Admin');
+    redirect('/admin');
   }else if (userType === 'DEAN'){
     redirect('/dean');
   }  else if (userType === 'SUPERADMIN') {
-    redirect('/SuperAdmin');
+    redirect('/superadmin');
   }
   return (
     <>
