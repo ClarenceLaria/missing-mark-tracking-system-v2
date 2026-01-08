@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     // Determine department based on regNo
     let departmentName;
     const prefix = registrationNumber.substring(0, 3).toUpperCase();
-    if (prefix === 'SIT') {
+    if (prefix === 'SIT' || prefix === 'SIK') {
       departmentName = 'Information Technology';
     } else if(prefix === 'COM' || prefix === 'ETS'){
       departmentName = 'Computer Science';
@@ -54,7 +54,6 @@ export async function POST(req: Request) {
     const departmentId = departmentName ? departmentMap[departmentName] : undefined;
     if (!departmentId) {
       return NextResponse.json({ error: 'Invalid registration number' }, { status: 400 });
-      // return new Response(JSON.stringify({ message: 'Invalid registration number' }), { status: 400 });
     }
 
     // Fetch all courses from the database with their names and ids

@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import Input from './Input';
 import Button from './Button';
 import { signIn, useSession } from 'next-auth/react';
-import { Session } from 'next-auth';
 
 // Extend the Session type to include userType
 declare module 'next-auth' {
@@ -32,7 +31,6 @@ export default function AuthForm() {
     email: '',
     password: '',
     registrationNumber: '',
-    // userType:'STUDENT'
   });
 
   const toggleLoading = () => {
@@ -50,20 +48,22 @@ export default function AuthForm() {
     if (status === 'authenticated') {
       const userType = session.userType as UserType
       if(userType === 'STUDENT'){
-        router.push('/Student');
-      }else if (userType === 'LECTURER') {
-        router.push('/Lecturer');
-      }
-       else if(userType === 'ADMIN' || userType === 'COD' || userType === 'DEAN') {
-        router.push('/Admin');
-      }else if(userType === 'SUPERADMIN'){
-        router.push('/SuperAdmin/Dashboard')
+        router.push('/student');
+      } else if (userType === 'LECTURER') {
+        router.push('/lecturer');
+      } else if (userType === 'COD') {
+        router.push('/cod');
+      } else if (userType === 'DEAN') {
+        router.push('/dean');
+      } else if(userType === 'ADMIN') {
+        router.push('/admin');
+      } else if(userType === 'SUPERADMIN'){
+        router.push('/superadmin')
       }
     }
   });
 
   const isValidEmail = (email: string) => {
-    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; //This accepts any email eg 123@gmail.com as long as the format is correct
     const emailRegex = /^[a-z][a-z0-9._%+-]*@[a-z0-9.-]+\.[a-z]{2,}$/; //This rejects emails like 123@gmail.com and accepts emails like example123@gmail.com, all emails must be lowercase
     return emailRegex.test(email);
   };
