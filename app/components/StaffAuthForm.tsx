@@ -42,15 +42,17 @@ export default function StaffAuthForm() {
     if (status === 'authenticated') {
       const userType = session.userType as UserType
       if (userType === 'LECTURER') {
-        router.push('/Lecturer');
+        router.push('/lecturer');
       }else if (userType === 'COD'){
         router.push('/cod');
-      }else if(userType === 'ADMIN' || userType === 'DEAN') {
-        router.push('/Admin');
+      }else if ( userType === 'DEAN') {
+        router.push('/dean');
+      }else if(userType === 'ADMIN') {
+        router.push('/admin');
       }else if(userType === 'SUPERADMIN'){
-        router.push('/SuperAdmin/Dashboard')
+        router.push('/superAdmin')
       }else if(userType === 'STUDENT'){
-        router.push('/Student/home')
+        router.push('/student/home')
       }
     }
   });
@@ -93,9 +95,6 @@ export default function StaffAuthForm() {
     
 console.log(formData)
     try {
-
-     
-
       if (variant === 'REGISTER') {
         try {
           if(!isValidPhoneNumber(formData.phoneNumber)){
