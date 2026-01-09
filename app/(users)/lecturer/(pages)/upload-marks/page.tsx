@@ -1,0 +1,160 @@
+"use client";
+
+import { Button } from "@/app/components/ui/button";
+import { AlertCircle, FileSpreadsheet, Upload } from "lucide-react";
+import { useState } from "react";
+import toast from "react-hot-toast";
+
+type Unit = {
+  id: number;
+  code: string;
+  name: string;
+};
+
+export default function UploadMarksPage() {
+  const [file, setFile] = useState<File | null>(null);
+  const [unitId, setUnitId] = useState<string>("");
+
+  // This should be fetched from backend (simplified here)
+  const units: Unit[] = [
+    { id: 1, code: "CSC101", name: "Introduction to Computing" },
+    { id: 2, code: "CSC202", name: "Data Structures" },
+  ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!file || !unitId) {
+      toast.error("Please select a unit and an Excel file");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("unitId", unitId);
+
+    const res = await fetch("/api/lecturer/upload-marks", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    if (res.ok || res.status == 200) {
+      console.log("Marks uploaded successfully", data);
+      toast.success("Marks uploaded successfully");
+    } else {
+      toast.error("Marks upload failed: ", data.error);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-8">
+      {/* PAGE HEADER */}
+      <div>
+        <h1 className="text-2xl font-semibold">Upload Examination Marks</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Upload marks using an Excel file after marking is complete.
+        </p>
+      </div>
+
+      {/* MAIN CARD */}
+      <div className="rounded-2xl border bg-card shadow-sm">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* UNIT SELECTION */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              Academic Unit
+            </label>
+            <select
+              value={unitId}
+              onChange={(e) => setUnitId(e.target.value)}
+              className="w-full rounded-lg border px-3 py-2 text-sm"
+            >
+              <option value="">Select unit</option>
+              {units.map((unit) => (
+                <option key={unit.id} value={unit.id}>
+                  {unit.code} — {unit.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* FILE UPLOAD */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium">
+              Excel File
+            </label>
+
+            <label
+              htmlFor="file-upload"
+              className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed p-8 cursor-pointer hover:bg-muted transition"
+            >
+              <FileSpreadsheet className="h-10 w-10 text-muted-foreground" />
+
+              {file ? (
+                <div className="text-sm text-center">
+                  <p className="font-medium">{file.name}</p>
+                  <p className="text-muted-foreground text-xs">
+                    Click to change file
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center text-sm">
+                  <p className="font-medium">
+                    Click to upload or drag and drop
+                  </p>
+                  <p className="text-muted-foreground text-xs mt-1">
+                    .xlsx or .xls files only
+                  </p>
+                </div>
+              )}
+
+              <input
+                id="file-upload"
+                type="file"
+                accept=".xlsx,.xls"
+                className="hidden"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+              />
+            </label>
+          </div>
+
+          {/* EXCEL FORMAT NOTICE */}
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 flex gap-3">
+            <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
+            <div className="text-sm">
+              <p className="font-medium text-destructive">
+                Excel File Requirements
+              </p>
+              <ul className="list-disc ml-5 mt-1 text-destructive text-xs">
+                <li>Columns must be named exactly: <b>regNo</b>, <b>examResult</b>, <b>catResult</b></li>
+                <li>Exam marks should be out of 70</li>
+                <li>CAT marks should be out of 30</li>
+                <li>Students must be registered for this unit</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* ACTIONS */}
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button 
+            variant={'outline'} 
+            onClick={() => {
+                setFile(null);
+                setUnitId("");
+            }}
+            >Reset</Button>
+
+            <button
+              type="submit"
+              className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground flex items-center gap-2"
+            >
+              <Upload className="h-4 w-4" />
+              Upload Marks
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
