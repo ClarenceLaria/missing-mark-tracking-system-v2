@@ -7,6 +7,7 @@ import { Toaster } from "../../components/ui/toaster";
 import { UserNav } from "../../components/user-nav";
 import { ThemeToggle } from "../../components/ThemeToggle";
 import { DashboardNav } from "../../components/DashboardNav";
+import { GraduationCap } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "MMUST Missing Marks System",
@@ -42,22 +43,36 @@ export default async function StudentLayout({
         enableSystem
         disableTransitionOnChange
       >
-      <div className="min-h-screen flex">
-      <DashboardNav />
-      <div className="flex-1">
-        <header className="border-b">
-          <div className="flex h-16 items-center px-4">
-            <div className="ml-auto flex items-center space-x-4">
-              <ThemeToggle />
-              <UserNav />
-            </div>
+      <div className="min-h-screen flex flex-col">
+        
+        {/* TOP BAR */}
+        <header className="h-16 border-b flex items-center px-4">
+          <div className="hidden md:flex items-center gap-2">
+            <GraduationCap className="h-6 w-6" />
+            <span className="font-semibold">Missing Mark System</span>
+          </div>
+          <DashboardNav />   {/* menu button + drawer only */}
+          <div className="ml-auto flex items-center gap-4">
+            <ThemeToggle />
+            <UserNav />
           </div>
         </header>
-        <main className="p-8">{children}</main>
+
+        {/* BODY */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* DESKTOP SIDEBAR */}
+          <aside className="hidden md:block w-64 border-r bg-card">
+            <DashboardNav variant="sidebar" />
+          </aside>
+
+          {/* MAIN CONTENT */}
+          <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
+            {children}
+          </main>
+        </div>
+
       </div>
-    </div>
-      <Toaster/>
-      </ThemeProvider>
+    </ThemeProvider>
     </>
   );
 }
