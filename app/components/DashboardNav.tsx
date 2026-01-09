@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   School,
   Users,
-  Building2,
   FileSpreadsheet,
   GraduationCapIcon,
   XIcon,
@@ -22,27 +21,27 @@ const routes = {
     {
       title: "Dashboard",
       icon: LayoutDashboard,
-      href: "/Admin",
+      href: "/admin",
     },
     {
       title: "Schools",
       icon: School,
-      href: "/Admin/schools",
+      href: "/admin/schools",
     },
     {
       title: "Users",
       icon: Users,
-      href: "/Admin/users",
+      href: "/admin/users",
     },
     {
       title: "Programs",
       icon: GraduationCapIcon,
-      href: "/Admin/programs",
+      href: "/admin/programs",
     },
     {
       title: "Courses",
       icon: BookOpen,
-      href: "/Admin/courses",
+      href: "/admin/courses",
     },
   ],
   DEAN: [
@@ -103,67 +102,70 @@ const routes = {
     {
       title: "Dashboard",
       icon: LayoutDashboard,
-      href: "/Lecturer",
+      href: "/lecturer",
+    },
+    {
+      title: "Upload Marks",
+      icon: BookOpen,
+      href: "/lecturer/upload-marks",
     },
     {
       title: "My Courses",
       icon: BookOpen,
-      href: "/Lecturer/courses",
+      href: "/lecturer/courses",
     },
     {
       title: "Missing Marks",
       icon: FileSpreadsheet,
-      href: "/Lecturer/missing-marks",
+      href: "/lecturer/missing-marks",
     },
   ],
   STUDENT: [
     {
       title: "Dashboard",
       icon: LayoutDashboard,
-      href: "/Student",
+      href: "/student",
     },
     {
       title: "My Courses",
       icon: BookOpen,
-      href: "/Student/courses",
+      href: "/student/courses",
     },
     {
       title: "My Missing Mark",
       icon: FileSpreadsheet,
-      href: "/Student/reported",
+      href: "/student/reported",
     },
   ],
 };
 
-export function DashboardNav() {
+type Variant = "mobile" | "sidebar";
+
+interface DashboardNavProps {
+  variant?: Variant;
+}
+
+export function DashboardNav({ variant }: DashboardNavProps = {}) {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  
   // This should be dynamic based on user role from auth context
-  const userRole = pathname.includes("/Admin")
+  const userRole = pathname.includes("/admin")
     ? "ADMIN"
     : pathname.includes("/dean")
     ? "DEAN"
     : pathname.includes("/cod")
     ? "COD"
-    : pathname.includes("/Lecturer")
+    : pathname.includes("/lecturer")
     ? "LECTURER"
     : "STUDENT";
 
   const currentRoutes = routes[userRole as keyof typeof routes];
 
-  const [isOpen, setIsOpen] = useState(false);
-  const toggleNav = () => {
-    setIsOpen((prev) => !prev);
-  };
-  const toggleOffNav = () => {
-    setIsOpen(!toggleNav);
-  };
-  return (
-    <div>
+  if (variant === "sidebar") {
+    return (
       <nav className="hidden md:block w-64 border-r bg-card min-h-screen p-4 space-y-4">
-        <div className="flex items-center gap-2 px-2 mb-8">
-          <GraduationCap className="h-6 w-6" />
-          <span className="font-semibold">Missing Mark System</span>
-        </div>
+        
         <div className="space-y-1">
           {currentRoutes.map((route) => (
             <Link
@@ -182,39 +184,65 @@ export function DashboardNav() {
           ))}
         </div>
       </nav>
-      {/* For mobile view */}
-      <nav className={cn('md:hidden w-full top-0 left-0 absolute', isOpen && 'h-full bg-card z-50')}>
-        <div className='flex items-center justify- mb-8 p-4'>
-          <div>
-            <XIcon className={cn("h-6 w-6 ", !isOpen && 'hidden')} onClick={toggleNav}/>
-            <MenuIcon className={cn("h-6 w-6 ", isOpen && 'hidden')} onClick={toggleNav}/>
-          </div>
-          <div className="flex items-center gap-2 px-2 mx-auto pt-1">
+    );
+  }
+
+  /* ---------------- MOBILE NAV (HEADER + DRAWER) ---------------- */
+  return (
+    <>
+      {/* Menu Button */}
+      <button
+        onClick={() => setOpen(true)}
+        className="md:hidden p-2 rounded-md hover:bg-muted"
+        aria-label="Open menu"
+      >
+        <MenuIcon className="h-6 w-6" />
+      </button>
+
+      {/* Overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Drawer */}
+      <aside
+        className={cn(
+          "fixed top-0 left-0 z-50 h-full w-72 bg-card border-r transform transition-transform duration-300",
+          open ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="flex items-center justify-between p-4 border-b">
+          <div className="flex items-center gap-2">
             <GraduationCap className="h-6 w-6" />
-            <span className="font-semibold">Missing Mark System</span>
+            <span className="font-semibold">Missing Marks System</span>
           </div>
+          <button onClick={() => setOpen(false)}>
+            <XIcon className="h-5 w-5" />
+          </button>
         </div>
-        <div className={cn('w-full h-full bg-card z-50', !isOpen && 'hidden')}>
-          <div className='w-3/4 mx-auto '>
-            {currentRoutes.map((route) => (
-              <Link
-                onClick={toggleOffNav}
-                key={route.href}
-                href={route.href}
-                className={cn(
-                  "flex items-center my-5 gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
-                  pathname === route.href
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted"
-                )}
-              >
-                <route.icon className="h-4 w-4" />
-                {route.title}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </nav>
-    </div>
+
+        <nav className="p-4 space-y-1">
+          {currentRoutes.map((route) => (
+            <Link
+              key={route.href}
+              href={route.href}
+              onClick={() => setOpen(false)}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                pathname === route.href
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted"
+              )}
+            >
+              <route.icon className="h-4 w-4" />
+              {route.title}
+            </Link>
+          ))}
+        </nav>
+      </aside>
+    </>
   );
 }
