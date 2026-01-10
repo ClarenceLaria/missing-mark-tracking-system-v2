@@ -1,25 +1,36 @@
 "use client";
 
 import { Button } from "@/app/components/ui/button";
+import { fetchLecturerUnits } from "@/app/lib/actions";
 import { AlertCircle, FileSpreadsheet, Upload } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 type Unit = {
   id: number;
-  code: string;
   name: string;
+  code: string;
+  year: string;
+  totalStudents: number;
 };
 
 export default function UploadMarksPage() {
   const [file, setFile] = useState<File | null>(null);
   const [unitId, setUnitId] = useState<string>("");
+  const [units, setUnits] = useState<Unit[]>([]);
 
-  // This should be fetched from backend (simplified here)
-  const units: Unit[] = [
-    { id: 1, code: "CSC101", name: "Introduction to Computing" },
-    { id: 2, code: "CSC202", name: "Data Structures" },
-  ];
+  useEffect(() => {
+    const fetchUnits = async () => {
+      try {
+        const units = await fetchLecturerUnits();
+        setUnits(units?.unitDetails || []);
+      } catch (error) {
+        console.error("Error fetching units:", error);
+        toast.error("Failed to load units");
+      }
+    };
+    fetchUnits();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +54,8 @@ export default function UploadMarksPage() {
       toast.dismiss();
       const data = await res.json();
       if (res.ok || res.status == 200) {
+        setFile(null);
+        setUnitId("");
         console.log("Marks uploaded successfully", data);
         toast.success("Marks uploaded successfully");
       } else if (res.status == 400) {

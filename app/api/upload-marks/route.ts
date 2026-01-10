@@ -96,10 +96,7 @@ export async function POST(req: Request) {
       uploadedStudentIds.add(mark.studentId);
     }
 
-    // ===============================
     // DETECT MISSING MARKS
-    // ===============================
-
     const missingStudents = registeredStudents.filter(
       (s) => !uploadedStudentIds.has(s.id)
     );
