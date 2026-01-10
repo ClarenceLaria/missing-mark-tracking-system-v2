@@ -33,17 +33,24 @@ export default function UploadMarksPage() {
     formData.append("file", file);
     formData.append("unitId", unitId);
 
-    const res = await fetch("/api/lecturer/upload-marks", {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await res.json();
-    if (res.ok || res.status == 200) {
-      console.log("Marks uploaded successfully", data);
-      toast.success("Marks uploaded successfully");
-    } else {
-      toast.error("Marks upload failed: ", data.error);
+    try{
+      toast.loading("Uploading marks...");
+      const res = await fetch("/api/upload-marks", {
+        method: "POST",
+        body: formData,
+      });
+  
+      toast.dismiss();
+      const data = await res.json();
+      if (res.ok || res.status == 200) {
+        console.log("Marks uploaded successfully", data);
+        toast.success("Marks uploaded successfully");
+      } else if (res.status == 400) {
+        toast.error(data.error);
+      }
+    } catch (error) {
+      console.error("Error uploading marks:", error);
+      toast.error("Server error");
     }
   };
 
@@ -138,20 +145,20 @@ export default function UploadMarksPage() {
           {/* ACTIONS */}
           <div className="flex justify-end gap-3 pt-4 border-t">
             <Button 
-            variant={'outline'} 
-            onClick={() => {
-                setFile(null);
-                setUnitId("");
-            }}
+              variant={'outline'} 
+              type="reset"
+              onClick={() => {
+                  setFile(null);
+                  setUnitId("");
+              }}
             >Reset</Button>
 
-            <button
+            <Button 
+              onClick={handleSubmit}
               type="submit"
-              className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground flex items-center gap-2"
-            >
-              <Upload className="h-4 w-4" />
+            ><Upload className="h-4 w-4" />
               Upload Marks
-            </button>
+            </Button>
           </div>
         </form>
       </div>

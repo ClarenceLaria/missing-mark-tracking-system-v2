@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
-import fs from "fs";
-import path from "path";
-import formidable from "formidable";
 import { prisma } from "@/app/lib/prismadb";
 
 export async function POST(req: Request) {
@@ -11,32 +8,27 @@ export async function POST(req: Request) {
   }
   
   try {
-    const { unitId } = await req.json();
-    const form = formidable({ multiples: false });
+    const formData = await req.formData();
 
-    const { fields, files }: any = await new Promise((resolve, reject) => {
-      form.parse(req as any, (err, fields, files) => {
-        if (err) reject(err);
-        resolve({ fields, files });
-      });
-    });
-
-    if (!unitId) {
-      return NextResponse.json(
-        { error: "unitId is required" },
-        { status: 400 }
-      );
-    }
-
-    const file = files.file;
+    const unitIdRaw = formData.get("unitId") as string;
+    const file = formData.get("file") as File || null;
     if (!file) {
       return NextResponse.json(
         { error: "Excel file is required" },
         { status: 400 }
       );
     }
+    if (!unitIdRaw) {
+      return NextResponse.json(
+        { error: "unitId is required" },
+        { status: 400 }
+      );
+    }
+    const unitId = Number(unitIdRaw);
 
-    const workbook = XLSX.readFile(file.filepath);
+    //Read Excel file
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const workbook = XLSX.read(buffer, { type: "buffer" });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows: any[] = XLSX.utils.sheet_to_json(sheet);
 
@@ -62,27 +54,30 @@ export async function POST(req: Request) {
     });
 
     const registeredStudents = registrations.map(r => r.registration.student);
-
+    const studentByRegNo = new Map(
+      registeredStudents.map((student) => [student.regNo, student])
+    )
     const uploadedStudentIds = new Set<number>();
 
-    // Upload marks
+    // upsert(if the mark exists it updates otherwise creates) marks
     for (const row of rows) {
       const regNo = String(row.regNo || "").trim();
-      if (!registeredStudents.some((student) => student.regNo === regNo)) continue;
+      const student = studentByRegNo.get(regNo);
 
-      const studentId = registeredStudents.find((student) => student.regNo === regNo)!.id;
+      if (!student) continue;
 
-      const exam = row.exam !== undefined ? Number(row.exam) : null;
-      const cat = row.cat !== undefined ? Number(row.cat) : null;
+      const exam =
+        row.examResult !== undefined ? Number(row.examResult) : null;
+      const cat =
+        row.catResult !== undefined ? Number(row.catResult) : null;
 
       if (exam === null && cat === null) continue;
 
-
-      const uploadedMarks = await prisma.examMark.upsert({
+      const mark = await prisma.examMark.upsert({
         where: {
           unitId_studentId: {
             unitId,
-            studentId,
+            studentId: student.id,
           },
         },
         update: {
@@ -91,14 +86,14 @@ export async function POST(req: Request) {
         },
         create: {
           unitId,
-          studentId,
-          examResult: exam ?? 0, // Default to 0 if null
+          studentId: student.id,
+          examResult: exam ?? 0,
           catResult: cat ?? 0,
         },
-        select: { studentId: true},
+        select: { studentId: true },
       });
 
-      uploadedStudentIds.add(uploadedMarks.studentId); 
+      uploadedStudentIds.add(mark.studentId);
     }
 
     // ===============================
@@ -145,7 +140,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Error uploading marks:", error);
     return NextResponse.json(
-      { error: "Failed to upload marks" },
+      { error: "Server error" },
       { status: 500 }
     );
   }
