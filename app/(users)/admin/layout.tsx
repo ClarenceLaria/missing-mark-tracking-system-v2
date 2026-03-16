@@ -25,7 +25,7 @@ export default async function StudentLayout({
   }
   const userType =session?.userType
   if (userType === 'STUDENT') {
-    redirect('/student/home');
+    redirect('/student');
   } else if (userType === 'LECTURER') {
     redirect('/lecturer');
   } else if (userType === 'COD') {

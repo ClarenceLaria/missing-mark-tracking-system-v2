@@ -26,7 +26,7 @@ export default async function CodLayout({
   const userType =session?.userType
 
   if (userType === 'STUDENT') {
-    redirect('/student/home');
+    redirect('/student');
   } else if (userType === 'LECTURER') {
     redirect('/lecturer');
   } else if (userType === 'ADMIN') {
