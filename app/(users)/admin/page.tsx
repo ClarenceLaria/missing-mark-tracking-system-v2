@@ -42,8 +42,6 @@ export default function Page() {
                 const result = await fetchSchoolTotals(email);
                 setPending(result?.pendingTotals);
                 setFound(result?.markFoundTotals);
-                setNotFound(result?.markNotFoundTotals);
-                setForwarded(result?.forInvestigationTotals);
                 setCleared(result?.totalCleared);
                 setTotalReports(result?.totalReports);
                 setLoading(false);

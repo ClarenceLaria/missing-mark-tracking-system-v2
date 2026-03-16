@@ -12,9 +12,7 @@ export default function Page() {
     const [totalReports, setTotalReports] = useState<number>();
     const [pendingTotals, setPendingTotals] = useState(Number);
     const [markFoundTotals, setMarkFoundTotals] = useState(Number);
-    const [notFoundTotals, setNotFoundTotals] = useState(Number);
     const [clearedTotals, setClearedTotals] = useState(Number);
-    const [forwardedTotals, setForwardedTotals] = useState(Number);
     const [loading, setLoading] = useState(true);
     const [totalLecturers, setTotalLecturers] = useState<number>();
     const [totalStudents, setTotalStudents] = useState<number>()
@@ -31,8 +29,6 @@ export default function Page() {
                     setTotalReports(totals.totalReports);
                     setPendingTotals(totals.pendingTotals);
                     setMarkFoundTotals(totals.markFoundTotals);
-                    setNotFoundTotals(totals.notFoundTotals);
-                    setForwardedTotals(totals.forwardedTotals);
                     setClearedTotals(totals.clearedTotals);
                 }
                 setLoading(false);

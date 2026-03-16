@@ -36,7 +36,7 @@ export default function Page() {
       try{
         setLoading(true);
         const result = await fetchSchoolReports(email);
-        const forwardedReports = result?.forwardedReports || [];
+        // const forwardedReports = result?.forwardedReports || [];
         // setReports(forwardedReports);
         setLoading(false);
       }catch(error){
