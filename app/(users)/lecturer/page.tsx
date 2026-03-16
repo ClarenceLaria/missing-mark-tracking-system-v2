@@ -24,9 +24,7 @@ export default function Page() {
       setTotals(totals.totalLecsMissingMarks);
       setPendingTotals(totals.pendingTotals);
       setMarkFoundTotals(totals.markFoundTotals);
-      setNotFoundTotals(totals.markNotFoundTotals);
       setClearedMarks(totals.totalCleared);
-      setInvestigationTotals(totals.forInvestigationTotals);
       setLoading(false);
     }
     handleReportTotals();

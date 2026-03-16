@@ -152,21 +152,10 @@ export async function fetchReportNumbers(){
         const markFoundTotals = await prisma.missingMarksReport.count({
             where:{
                 studentId: id,
-                reportStatus: "MARK_FOUND"
+                reportStatus: "RESOLVED"
             }
         })
-        const markNotFoundTotals = await prisma.missingMarksReport.count({
-            where:{
-                studentId: id,
-                reportStatus: "MARK_NOT_FOUND"
-            }
-        })
-        const forInvestigationTotals = await prisma.missingMarksReport.count({
-            where:{
-                studentId: id,
-                reportStatus: "FOR_FURTHER_INVESTIGATION"
-            }
-        });
+
         const unitTotals = await prisma.unit.count({
             where:{
                 courses:{
@@ -182,7 +171,7 @@ export async function fetchReportNumbers(){
                 }
             }
         })
-        return {TotalReports, pendingTotals, markFoundTotals, markNotFoundTotals, forInvestigationTotals, unitTotals} 
+        return {TotalReports, pendingTotals, markFoundTotals, unitTotals} 
     }catch(error){
         console.error("Error counting totals:", error)
         throw new Error("Could not count Reports")
@@ -330,27 +319,13 @@ export async function fetchLecturerMissingMarksTotals(){
                 unitId: {
                     in: unitIds
                 },
-                reportStatus: "MARK_FOUND"
+                reportStatus: "RESOLVED"
             }
         })
-        const markNotFoundTotals = await prisma.missingMarksReport.count({
-            where:{
-                unitId: {
-                    in: unitIds
-                },
-                reportStatus: "MARK_NOT_FOUND"
-            }
-        })
-        const totalCleared = markFoundTotals + markNotFoundTotals;
-        const forInvestigationTotals = await prisma.missingMarksReport.count({
-            where:{
-                unitId: {
-                    in: unitIds
-                },
-                reportStatus: "FOR_FURTHER_INVESTIGATION"
-            }
-        })
-        return {totalLecsMissingMarks, forInvestigationTotals, markFoundTotals, markNotFoundTotals, pendingTotals, totalCleared};
+
+        const totalCleared = markFoundTotals + pendingTotals;
+
+        return {totalLecsMissingMarks, markFoundTotals, pendingTotals, totalCleared};
     }catch(error){
         console.error("Error fetching missing marks:", error)
         throw new Error("Could not fetch missing marks")
@@ -509,7 +484,7 @@ export async function fetchClearedReports(email:string){
                 unit:{
                     lecturerId: lecturerId,
                 },
-                reportStatus: {in: ["MARK_FOUND", "MARK_NOT_FOUND"]},
+                reportStatus: "RESOLVED",
             },
         });
         return reports;
@@ -532,7 +507,7 @@ export async function fetchForwardedReport(email:string){
                 unit:{
                     lecturerId: lecturerId,
                 },
-                reportStatus: "FOR_FURTHER_INVESTIGATION",
+                // reportStatus: "FOR_FURTHER_INVESTIGATION",
             }
         });
         return reports;
@@ -570,34 +545,19 @@ export async function fetchDepartmentTotals(email: string) {
                 student:{
                     departmentId: codDeptId,
                 },
-                reportStatus: "MARK_FOUND"
+                reportStatus: "RESOLVED"
             }
         })
-        const notFoundTotals = await prisma.missingMarksReport.count({
-            where:{
-                student:{
-                    departmentId: codDeptId,
-                },
-                reportStatus: "MARK_FOUND"
-            }
-        })
-        const forwardedTotals = await prisma.missingMarksReport.count({
-            where:{
-                student:{
-                    departmentId: codDeptId,
-                },
-                reportStatus: "FOR_FURTHER_INVESTIGATION"
-            }
-        })
+
         const clearedTotals = await prisma.missingMarksReport.count({
             where:{
                 student:{
                     departmentId: codDeptId,
                 },
-                reportStatus: { in: ["MARK_FOUND", "MARK_NOT_FOUND"]}
+                reportStatus: "RESOLVED"
             }
         })
-        return {totalReports, pendingTotals, clearedTotals, markFoundTotals, notFoundTotals, forwardedTotals};
+        return {totalReports, pendingTotals, clearedTotals, markFoundTotals};
     }catch(error){
         console.error('Error fetching department totals:', error)
     }
@@ -691,7 +651,7 @@ export async function fetchDepartmentReports(){
                 student: {
                     departmentId: codDeptId,
                 },
-                reportStatus: { in: ["MARK_FOUND", "MARK_NOT_FOUND"]},
+                reportStatus: "RESOLVED",
             }
         })
         const pendingReports = await prisma.missingMarksReport.findMany({
@@ -702,15 +662,8 @@ export async function fetchDepartmentReports(){
                 reportStatus: "PENDING",
             }
         })
-        const forwardedReports = await prisma.missingMarksReport.findMany({
-            where:{
-                student: {
-                    departmentId: codDeptId,
-                },
-                reportStatus: "FOR_FURTHER_INVESTIGATION",
-            }
-        })
-        return {pendingReports, forwardedReports, clearedReports, allReports};
+
+        return {pendingReports, clearedReports, allReports};
     }catch(error){
         console.error("Error fetching Department Missing Marks:", error);
     }
@@ -769,29 +722,7 @@ export async function fetchSchoolTotals(email: string){
 
         const markFoundTotals = await prisma.missingMarksReport.count({
             where:{
-                reportStatus: "MARK_FOUND",
-                student:{
-                    department:{
-                        schoolId: schoolId,
-                    }
-                }
-            }
-        });
-
-        const markNotFoundTotals = await prisma.missingMarksReport.count({
-            where:{
-                reportStatus: "MARK_NOT_FOUND",
-                student:{
-                    department:{
-                        schoolId: schoolId,
-                    }
-                }
-            }
-        });
-
-        const forInvestigationTotals = await prisma.missingMarksReport.count({
-            where:{
-                reportStatus: "FOR_FURTHER_INVESTIGATION",
+                reportStatus: "RESOLVED",
                 student:{
                     department:{
                         schoolId: schoolId,
@@ -816,9 +747,9 @@ export async function fetchSchoolTotals(email: string){
             },
         });
 
-        const totalCleared = markFoundTotals + markNotFoundTotals;
+        const totalCleared = markFoundTotals + pendingTotals;
 
-        return {pendingTotals, markFoundTotals, markNotFoundTotals, forInvestigationTotals, totalCleared, totalReports, totalDepartments};
+        return {pendingTotals, markFoundTotals, totalCleared, totalReports, totalDepartments};
     }catch(error){
         console.error("Error Fetching School Totals: ", error);
     }
@@ -936,18 +867,7 @@ export async function fetchSchoolReports(email: string){
 
         const clearedReports = await prisma.missingMarksReport.findMany({
             where:{
-                reportStatus: {in: ["MARK_FOUND", "MARK_NOT_FOUND"]},
-                student:{
-                    department:{
-                        schoolId: schoolId,
-                    }
-                }
-            }
-        });
-
-        const forwardedReports = await prisma.missingMarksReport.findMany({
-            where:{
-                reportStatus: "FOR_FURTHER_INVESTIGATION",
+                reportStatus: "RESOLVED",
                 student:{
                     department:{
                         schoolId: schoolId,
@@ -963,7 +883,7 @@ export async function fetchSchoolReports(email: string){
                 name: `${report.student.firstName + " " + report.student.secondName}`,
             }
         }))
-        return {pendingReports, clearedReports, forwardedReports, reports: reportWithStudents};
+        return {pendingReports, clearedReports, reports: reportWithStudents};
     }catch(error){
         console.error("Error fetching missing marks: ", error)
     }
@@ -1316,16 +1236,11 @@ export async function fetchUniversityMissingReports () {
 
         const cleared = await prisma.missingMarksReport.findMany({
             where: {
-                reportStatus: {in: ['MARK_FOUND', 'MARK_NOT_FOUND']}
+                reportStatus: "RESOLVED"
             }
         })
 
-        const forInvestigation = await prisma.missingMarksReport.findMany({
-            where: {
-                reportStatus: 'FOR_FURTHER_INVESTIGATION'
-            }
-        })
-        return {pending, cleared, forInvestigation};
+        return {pending, cleared};
     }catch(error){
         console.error("Error fetching reports: ", error)
     }
