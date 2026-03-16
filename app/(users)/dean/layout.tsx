@@ -18,7 +18,7 @@ export default async function DashboardLayout({
     }
     const userType =session?.userType;
     if (userType === 'STUDENT') {
-      redirect('/student/home');
+      redirect('/student');
     } else if (userType === 'LECTURER') {
       redirect('/lecturer');
     } else if (userType === 'COD') {
