@@ -48,6 +48,7 @@ model Student {
   examMarks   ExamMark[]
   reports     MissingMarksReport[]
   semesterRegistrations SemesterRegistration[]
+  suspendedMarks SuspendedExamMark[]
 }
 
 model School {
@@ -94,6 +95,7 @@ model Unit {
   marks         ExamMark[]
   missingMarks  MissingMarksReport[]
   registeredUnits RegisteredUnit[]
+  suspendedMarks SuspendedExamMark[]
 }
 
 model UnitCourse {
@@ -140,6 +142,20 @@ model ExamMark {
   unit        Unit      @relation(fields: [unitId], references: [id], onDelete: Cascade)
   student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)  
   @@id([unitId, studentId])
+}
+
+model SuspendedExamMark {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  studentId   Int
+  unitId      Int
+  examResult  Int
+  catResult   Int
+  reason      String
+  status      ExamSuspensionStatus @default(SUSPENDED)
+
+  unit        Unit      @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)  
 }
 
 model MissingMarksReport {
@@ -196,9 +212,7 @@ enum Semester {
 
 enum ReportStatus {
   PENDING
-  MARK_FOUND
-  MARK_NOT_FOUND
-  FOR_FURTHER_INVESTIGATION
+  RESOLVED
 }
 
 enum UserStatus {
@@ -209,4 +223,9 @@ enum UserStatus {
 enum AttendanceStatus {
   PRESENT
   ABSENT
+}
+
+enum ExamSuspensionStatus {
+  SUSPENDED
+  RELEASED
 }
