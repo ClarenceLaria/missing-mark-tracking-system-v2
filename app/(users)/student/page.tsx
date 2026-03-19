@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { EnrolledCourses } from "@/app/components/student/enrolled-courses";
-import { MissingMarksHistory } from "@/app/components/student/report-history";
+import { MissingMarksHistory } from "@/app/components/student/missing-marks-history";
 import { BookOpen, FileCheck, AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { checkYear, fetchReportNumbers } from "@/app/lib/actions";

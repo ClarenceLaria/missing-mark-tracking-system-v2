@@ -100,7 +100,7 @@ export async function fetchStaffProfile(){
 }
 
 
-export async function fetchMissingReports(){
+export async function fetchMissingMarks(){
     const session = await getServerSession(authOptions);
     const email = session?.user?.email!;
 
@@ -118,8 +118,44 @@ export async function fetchMissingReports(){
             where: {
                 studentId: id,
             },
+            include: {
+                unit: {
+                    select: { 
+                        unitName: true,
+                        unitCode: true,
+                        lecturer: {
+                            select: {
+                                firstName: true,
+                                secondName: true,
+                            }
+                        }
+                    },
+                },
+                student: {
+                    include: {
+                        course: {
+                            select: {
+                                name: true,
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
         })
-        return reports;
+        return reports.map((item) => ({
+            id: item.id,
+            createdAt: item.createdAt,
+            unitCode: item.unit.unitCode,
+            unitName: item.unit.unitName,
+            lecturerName: `${item.unit.lecturer.firstName} ${item.unit.lecturer.secondName}`,
+            courseName: item.student.course.name,
+            examType: item.examType,
+            semester: item.semester,
+            status: item.reportStatus,
+        }));;
     }catch(error){
         console.error('Error fetching user missing mark reports:', error)
         throw new Error ("Failed to fetch missing mark reports")
