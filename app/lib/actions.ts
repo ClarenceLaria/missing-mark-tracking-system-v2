@@ -138,18 +138,18 @@ export async function fetchReportNumbers(){
     const id = student?.id;
     
     try{
-        const TotalReports = await prisma.missingMarksReport.count({
+        const TotalMissingMarks = await prisma.missingMarksReport.count({
             where:{
                 studentId: id,
             }
         })
-        const pendingTotals = await prisma.missingMarksReport.count({
+        const pendingMissingMarks = await prisma.missingMarksReport.count({
             where:{
                 studentId: id,
                 reportStatus: "PENDING"
             }
         })
-        const markFoundTotals = await prisma.missingMarksReport.count({
+        const resolvedMissingMarks = await prisma.missingMarksReport.count({
             where:{
                 studentId: id,
                 reportStatus: "RESOLVED"
@@ -171,7 +171,7 @@ export async function fetchReportNumbers(){
                 }
             }
         })
-        return {TotalReports, pendingTotals, markFoundTotals, unitTotals} 
+        return {TotalMissingMarks, pendingMissingMarks, resolvedMissingMarks, unitTotals} 
     }catch(error){
         console.error("Error counting totals:", error)
         throw new Error("Could not count Reports")

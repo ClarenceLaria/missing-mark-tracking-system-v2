@@ -38,8 +38,9 @@ const courses = [
 
 interface Unit{
   id: number;
-  name: string;
-  code: string;
+  createdAt: Date;
+  unitName: string;
+  unitCode: string;
   academicYear: string;
   yearOfStudy: number;
   semester: Semester;
@@ -54,7 +55,7 @@ export function EnrolledCourses() {
   useEffect(() => {
     const handleUnits = async () => {
       const units = await fetchStudentUnits();
-      // setUnits(units?.currentUnits || []); 
+      setUnits(units?.currentUnits || []); 
     };
     handleUnits();
   },[]);
@@ -77,8 +78,8 @@ export function EnrolledCourses() {
           <TableBody>
             {units.map((unit) => (
               <TableRow key={unit.id}>
-                <TableCell className="font-medium">{unit.code}</TableCell>
-                <TableCell>{unit.name}</TableCell>
+                <TableCell className="font-medium">{unit.unitCode}</TableCell>
+                <TableCell>{unit.unitName}</TableCell>
                 <TableCell>{unit.lecturer.firstName + " " + unit.lecturer.secondName}</TableCell>
                 <TableCell>{unit.academicYear}</TableCell>
               </TableRow>

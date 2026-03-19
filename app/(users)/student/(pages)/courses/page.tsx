@@ -21,8 +21,9 @@ import { useEffect, useState } from "react";
 
 interface Unit{
   id: number;
-  name: string;
-  code: string;
+  createdAt: Date;
+  unitName: string;
+  unitCode: string;
   academicYear: string;
   yearOfStudy: number;
   semester: Semester;
@@ -38,7 +39,7 @@ export default function Page() {
   useEffect(() => {
     const handleUnits = async () => {
       const units = await fetchStudentUnits();
-      // setUnits(units?.units || []); 
+      setUnits(units?.units || []); 
     };
     handleUnits();
   },[]);
@@ -62,8 +63,8 @@ export default function Page() {
             {units.length > 0 ?
             units.map((unit) => (
               <TableRow key={unit.id}>
-                <TableCell className="font-medium">{unit.code}</TableCell>
-                <TableCell>{unit.name}</TableCell>
+                <TableCell className="font-medium">{unit.unitCode}</TableCell>
+                <TableCell>{unit.unitName}</TableCell>
                 <TableCell>{unit.lecturer.firstName + " " + unit.lecturer.secondName}</TableCell>
                 <TableCell>{unit.academicYear}</TableCell>
               </TableRow>

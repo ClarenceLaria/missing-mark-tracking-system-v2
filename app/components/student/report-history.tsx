@@ -50,7 +50,7 @@ interface missingReport {
   studentId: number;
   createdAt: Date;
 }
-export function ReportHistory() {
+export function MissingMarksHistory() {
   const [reports, setReports] = useState<missingReport []>([]);
 
   useEffect(() => {
