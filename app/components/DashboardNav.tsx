@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from '@/app/lib/utils';
+import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 import {
   BookOpen,
   GraduationCap,
@@ -135,6 +136,11 @@ const routes = {
       title: "My Missing Mark",
       icon: FileSpreadsheet,
       href: "/student/reported",
+    },
+    {
+      title: "Help",
+      icon: QuestionMarkCircleIcon,
+      href: "/student/help",
     },
   ],
 };
