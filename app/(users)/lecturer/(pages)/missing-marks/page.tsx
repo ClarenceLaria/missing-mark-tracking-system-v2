@@ -24,23 +24,24 @@ import Loader from '@/app/components/Loader';
 
 const Loading = () => <div>Loading...</div>;
 interface MissingReport {
-    id: number;
-    createdAt: Date;
-    unitName: string;
-    unitCode: string;
-    lecturerName: string;
-    academicYear: string;
-    examType: ExamType;
-    reportStatus: ReportStatus;
-    yearOfStudy: number;
-    semester: Semester;
-    studentId: number;
-    unitId: number;
-    student: {
-        firstName: string;
-        secondName: string;
-        regNo: string;
-    };
+  id: number;
+  createdAt: Date;
+  studentId: number;
+  unitId: number;
+  examType: ExamType;
+  academicYear: string;
+  semester: Semester;
+  yearOfStudy: number;
+  reportStatus: ReportStatus;
+  student: {
+    firstName: string;
+    secondName: string;
+    regNo: string;
+  };
+  unit: {
+      unitCode: string;
+      unitName: string;
+  };
 }
 export default function Page() {
     const [reports, setReport] = useState<MissingReport[]>([]);
@@ -53,7 +54,7 @@ export default function Page() {
             try{
                 setLoading(true);
                 const reports = await fetchLecturerMissingMarks();
-                // setReport(reports || []);
+                setReport(reports || []);
                 setLoading(false);
             }catch(error){
                 console.error('Error fetching reports:', error)
@@ -66,8 +67,8 @@ export default function Page() {
         id: report.id,
         name: `${report.student.firstName} ${report.student.secondName}`,
         regNo: report.student.regNo,
-        title: report.unitName,
-        unitCode: report.unitCode,
+        title: report.unit.unitName,
+        unitCode: report.unit.unitCode,
         date: report.createdAt,
         status: report.reportStatus,
       }));

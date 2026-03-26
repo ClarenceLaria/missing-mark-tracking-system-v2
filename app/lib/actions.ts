@@ -392,9 +392,15 @@ export async function fetchLecturerMissingMarks(){
                 unitId: {
                     in: unitIds
                 },
-                // reportStatus: { in: ["FOR_FURTHER_INVESTIGATION", "PENDING"] }
+                reportStatus: { in: ["PENDING"] }
             },
             include:{
+                unit:{
+                    select:{ 
+                        unitCode: true, 
+                        unitName: true,
+                },
+                },
                 student: {
                     select:{
                         regNo: true,
@@ -447,7 +453,6 @@ export async function fetchLecturerUnits(){
         const totalUnits = units.length;
 
         const unitDetails = units.map((unit) => {
-            // const totalDepartments = school.departments.length;
             const totalStudents = unit.courses.reduce(
               (acc, course) => acc + course.course.students.length,
               0
