@@ -21,6 +21,7 @@ import Search from '@/app/(users)/student/components/Search'
 import { fetchDepartmentReports, fetchLecturerMissingMarks } from '@/app/lib/actions';
 import { ExamType, ReportStatus, Semester } from '@/app/generated/prisma/enums';
 import Loader from '@/app/components/Loader';
+import SingleMissingMarkDialog from "@/app/components/lecturer/single-missing-mark-dialog";
 
 const Loading = () => <div>Loading...</div>;
 interface MissingReport {
@@ -48,6 +49,9 @@ export default function Page() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState<string | null>(null);
     const [searchDate, setSearchDate] = useState<Date | null>(null);
+
+    const [open, setOpen] = useState(false);
+    const [selectedReport, setSelectedReport] = useState<MissingReport | null>(null);
 
     useEffect(() => {
         const handleReports = async () => {
@@ -139,11 +143,13 @@ export default function Page() {
                   <TableCell>{report.date.toDateString()}</TableCell>
                   <TableCell>{report.status}</TableCell>
                   <TableCell className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" className="cursor-pointer"
+                      onClick={() => {
+                        const fullReport = reports.find(r => r.id === report.id);
+                        setSelectedReport(fullReport || null);
+                        setOpen(true);
+                      }}>
                       <EyeIcon className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" >
-                      <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -159,6 +165,8 @@ export default function Page() {
         </Table>
       </CardContent>
     </Card>
+
+    <SingleMissingMarkDialog report={selectedReport} open={open} onOpenChange={setOpen}/>
   </div>
   )
 }
