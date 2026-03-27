@@ -52,7 +52,7 @@ export default function StaffAuthForm() {
       }else if(userType === 'SUPERADMIN'){
         router.push('/superAdmin')
       }else if(userType === 'STUDENT'){
-        router.push('/student/home')
+        router.push('/student/')
       }
     }
   });

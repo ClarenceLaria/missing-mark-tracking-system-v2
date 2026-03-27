@@ -1,17 +1,16 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import {prisma} from '@/app/lib/prismadb';
 import bcrypt from 'bcrypt';
 import { AuthOptions } from 'next-auth';
 import {PrismaAdapter} from '@next-auth/prisma-adapter';
 import { UserType } from '../generated/prisma/enums';
+import { prisma } from '../lib/prismadb';
 
 type Student = {
     id: string;
     firstName: string;
     secondName: string;
     regNo: string;
-    password: string;
     email: string;
     userType: UserType;
     createdAt: Date;
@@ -23,7 +22,6 @@ type Staff = {
     secondName: string;
     email: string;
     phoneNumber: string;
-    password: string;
     userType: UserType;
     createdAt: Date;
 }
@@ -72,7 +70,6 @@ export const authOptions: AuthOptions = {
           id: `${student.id}`,
           firstName: student.firstName,
           secondName: student.secondName,
-          password: student.password,
           regNo: student.regNo,
           email: student.email,
           userType: student.userType,
@@ -109,7 +106,6 @@ export const authOptions: AuthOptions = {
             email: staff.email,
             phoneNumber: staff.phoneNumber,
             userType: staff.userType,
-            password: staff.password,
             createdAt: staff.createdAt,
           };
         }
@@ -117,10 +113,6 @@ export const authOptions: AuthOptions = {
       },
     }),
   ],
-//   pages: {
-//     signIn: '/auth/signin', 
-//     error: '/auth/error',   
-//   },
   callbacks: {
     async jwt({ token, user }: { token: any, user?: any }) {
       if(user){
@@ -129,7 +121,6 @@ export const authOptions: AuthOptions = {
             id: user.id,
             firstName: user.firstName,
             secondName: user.secondName,
-            password: user.password,
             email: user.email,
             userType: user.userType,
             createdAt: user.createdAt,
