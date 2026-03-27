@@ -21,26 +21,28 @@ import Search from '@/app/(users)/student/components/Search'
 import { fetchDepartmentReports, fetchLecturerMissingMarks } from '@/app/lib/actions';
 import { ExamType, ReportStatus, Semester } from '@/app/generated/prisma/enums';
 import Loader from '@/app/components/Loader';
+import SingleMissingMarkDialog from "@/app/components/lecturer/single-missing-mark-dialog";
 
 const Loading = () => <div>Loading...</div>;
 interface MissingReport {
-    id: number;
-    createdAt: Date;
-    unitName: string;
-    unitCode: string;
-    lecturerName: string;
-    academicYear: string;
-    examType: ExamType;
-    reportStatus: ReportStatus;
-    yearOfStudy: number;
-    semester: Semester;
-    studentId: number;
-    unitId: number;
-    student: {
-        firstName: string;
-        secondName: string;
-        regNo: string;
-    };
+  id: number;
+  createdAt: Date;
+  studentId: number;
+  unitId: number;
+  examType: ExamType;
+  academicYear: string;
+  semester: Semester;
+  yearOfStudy: number;
+  reportStatus: ReportStatus;
+  student: {
+    firstName: string;
+    secondName: string;
+    regNo: string;
+  };
+  unit: {
+      unitCode: string;
+      unitName: string;
+  };
 }
 export default function Page() {
     const [reports, setReport] = useState<MissingReport[]>([]);
@@ -48,12 +50,15 @@ export default function Page() {
     const [searchTerm, setSearchTerm] = useState<string | null>(null);
     const [searchDate, setSearchDate] = useState<Date | null>(null);
 
+    const [open, setOpen] = useState(false);
+    const [selectedReport, setSelectedReport] = useState<MissingReport | null>(null);
+
     useEffect(() => {
         const handleReports = async () => {
             try{
                 setLoading(true);
                 const reports = await fetchLecturerMissingMarks();
-                // setReport(reports || []);
+                setReport(reports || []);
                 setLoading(false);
             }catch(error){
                 console.error('Error fetching reports:', error)
@@ -66,8 +71,8 @@ export default function Page() {
         id: report.id,
         name: `${report.student.firstName} ${report.student.secondName}`,
         regNo: report.student.regNo,
-        title: report.unitName,
-        unitCode: report.unitCode,
+        title: report.unit.unitName,
+        unitCode: report.unit.unitCode,
         date: report.createdAt,
         status: report.reportStatus,
       }));
@@ -138,11 +143,13 @@ export default function Page() {
                   <TableCell>{report.date.toDateString()}</TableCell>
                   <TableCell>{report.status}</TableCell>
                   <TableCell className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" className="cursor-pointer"
+                      onClick={() => {
+                        const fullReport = reports.find(r => r.id === report.id);
+                        setSelectedReport(fullReport || null);
+                        setOpen(true);
+                      }}>
                       <EyeIcon className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" >
-                      <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -158,6 +165,8 @@ export default function Page() {
         </Table>
       </CardContent>
     </Card>
+
+    <SingleMissingMarkDialog report={selectedReport} open={open} onOpenChange={setOpen}/>
   </div>
   )
 }

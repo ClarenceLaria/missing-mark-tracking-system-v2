@@ -20,21 +20,19 @@ import {
 import React, {Suspense, useEffect, useState} from 'react'
 import Search from '../../components/Search'
 import { ExamType, ReportStatus, Semester, UserType } from '@/app/generated/prisma/enums';
-import { fetchMissingReports } from '@/app/lib/actions';
+import { fetchMissingMarks } from '@/app/lib/actions';
 import Loader from '@/app/components/Loader';
 
 interface missingReport {
-  academicYear: string;
-  yearOfStudy: number;
-  semester: Semester;
-  examType: ExamType;
-  lecturerName: string;
   id: number;
-  unitName: string;
-  unitCode: string;
-  reportStatus: ReportStatus;
-  studentId: number;
   createdAt: Date;
+  unitCode: string;
+  unitName: string;
+  lecturerName: string;
+  courseName: string;
+  examType: ExamType;
+  semester: Semester;
+  status: ReportStatus;
 }
 const Loading = () => <div>Loading...</div>;
 export default function Page() {
@@ -47,8 +45,8 @@ export default function Page() {
     const handleFetchReports = async () => {
         try{
             setLoading(true)
-            const fetchedReports = await fetchMissingReports();
-            // setReports(fetchedReports);
+            const fetchedReports = await fetchMissingMarks();
+            setReports(fetchedReports);
             setLoading(false)
         }catch(error){
             console.error('Error fetching missing marks report:', error)
@@ -62,7 +60,7 @@ export default function Page() {
     title: report.unitName,
     unitCode: report.unitCode,
     date: report.createdAt,
-    reportStatus: report.reportStatus,
+    reportStatus: report.status,
     lecturerName: report.lecturerName
   }));
   

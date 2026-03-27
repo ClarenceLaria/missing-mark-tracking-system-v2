@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/app/components/ui/table";
-import { fetchMissingReports } from "@/app/lib/actions";
+import { fetchMissingMarks } from "@/app/lib/actions";
 import { ExamType, ReportStatus, Semester } from '@/app/generated/prisma/enums';
 import { useEffect, useState } from "react";
 
@@ -37,27 +37,25 @@ const reports = [
   },
 ];
 
-interface missingReport {
-  academicYear: string;
-  yearOfStudy: number;
-  semester: Semester;
-  examType: ExamType;
-  lecturerName: string;
+interface missingMark {
   id: number;
-  unitName: string;
-  unitCode: string;
-  reportStatus: ReportStatus;
-  studentId: number;
   createdAt: Date;
+  unitCode: string;
+  unitName: string;
+  lecturerName: string;
+  courseName: string;
+  examType: ExamType;
+  semester: Semester;
+  status: ReportStatus;
 }
-export function ReportHistory() {
-  const [reports, setReports] = useState<missingReport []>([]);
+export function MissingMarksHistory() {
+  const [reports, setReports] = useState<missingMark []>([]);
 
   useEffect(() => {
     const handleReports = async () => {
       try{
-        const reports = await fetchMissingReports();
-        // setReports(reports || []);
+        const reports = await fetchMissingMarks();
+        setReports(reports || []);
       }catch(error){
         console.error("Error fetching reports: ",error)
       }
@@ -81,20 +79,25 @@ export function ReportHistory() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {reports.map((report) => (
+            {reports.length > 0 ?
+            reports.map((report) => (
               <TableRow key={report.id}>
                 <TableCell className="font-medium">{report.unitCode}</TableCell>
                 <TableCell>{report.lecturerName}</TableCell>
                 <TableCell>
                   <Badge
-                    variant={report.reportStatus === ReportStatus.PENDING ? "destructive" : "success"}
+                    variant={report.status === ReportStatus.PENDING ? "destructive" : "success"}
                   >
-                    {report.reportStatus}
+                    {report.status}
                   </Badge>
                 </TableCell>
                 <TableCell>{report.createdAt.toDateString()}</TableCell>
               </TableRow>
-            ))}
+            )) : (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center">No reports found</TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </CardContent>

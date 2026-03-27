@@ -40,22 +40,23 @@ const reports = [
 ];
 
 interface MissingReport {
+  reportStatus: ReportStatus;
   id: number;
   createdAt: Date;
-  unitName: string;
-  unitCode: string;
-  lecturerName: string;
   academicYear: string;
-  examType: ExamType;
-  reportStatus: ReportStatus;
   yearOfStudy: number;
   semester: Semester;
   studentId: number;
   unitId: number;
+  examType: ExamType;
   student: {
     firstName: string;
     secondName: string;
     regNo: string;
+  };
+  unit: {
+    unitName: string;
+    unitCode: string;
   };
 }
 export function MissingMarksTable() {
@@ -65,7 +66,7 @@ export function MissingMarksTable() {
     const handleReports = async () => {
       try{
         const report = await fetchLecturerMissingMarks();
-        // setReports(report);
+        setReports(report);
       }catch(error){
         console.error("Error fetching missing marks reports", error);
       }
@@ -95,7 +96,7 @@ export function MissingMarksTable() {
                 <TableRow key={report.id}>
                   <TableCell className="font-medium">{report.student.firstName + " " + report.student.secondName}</TableCell>
                   <TableCell>{report.student.regNo}</TableCell>
-                  <TableCell>{report.unitCode}</TableCell>
+                  <TableCell>{report.unit.unitCode}</TableCell>
                   <TableCell>
                     <Badge
                       variant={report.reportStatus === ReportStatus.PENDING ? "secondary" : "success"}

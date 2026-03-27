@@ -2,8 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { EnrolledCourses } from "@/app/components/student/enrolled-courses";
-import { MissingMarksReport } from "@/app/components/student/missing-marks-report";
-import { ReportHistory } from "@/app/components/student/report-history";
+import { MissingMarksHistory } from "@/app/components/student/missing-marks-history";
 import { BookOpen, FileCheck, AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { checkYear, fetchReportNumbers } from "@/app/lib/actions";
@@ -22,8 +21,8 @@ export default function StudentDashboard() {
       setLoading(true);
       const totals = await fetchReportNumbers();
       setUnitTotals(totals.unitTotals);
-      setPendingTotals(totals.pendingTotals);
-      setMarkFoundTotals(totals.markFoundTotals);
+      setPendingTotals(totals.pendingMissingMarks);
+      setMarkFoundTotals(totals.resolvedMissingMarks);
       setLoading(false);
     }
     handleTotals();
@@ -54,7 +53,7 @@ export default function StudentDashboard() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Reports</CardTitle>
+            <CardTitle className="text-sm font-medium">Pending Missing Marks</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -63,7 +62,7 @@ export default function StudentDashboard() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Resolved Reports</CardTitle>
+            <CardTitle className="text-sm font-medium">Resolved Missing Marks</CardTitle>
             <FileCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -71,11 +70,10 @@ export default function StudentDashboard() {
           </CardContent>
         </Card>
       </div>
-      <div className="grid gap-8 md:grid-cols-2">
-        <EnrolledCourses />
-        <MissingMarksReport />
-      </div>
-      <ReportHistory />
+      {/* Missing marks history */}
+      <MissingMarksHistory />
+      {/* Current semester's courses */}
+      <EnrolledCourses />
       <SetYearDialog open={isEmpty} />
     </div>
   );

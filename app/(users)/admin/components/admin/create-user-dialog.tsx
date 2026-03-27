@@ -245,7 +245,7 @@ export function CreateUserDialog({ open }: CreateUserDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>Create User</DialogTitle>
           <DialogDescription>

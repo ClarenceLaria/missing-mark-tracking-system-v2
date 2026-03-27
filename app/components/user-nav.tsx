@@ -66,17 +66,16 @@ export function UserNav() {
   const avatar = ((profile?.firstName?.substring(0, 1) ?? '') + (profile?.secondName?.substring(0, 1) ?? '')).toUpperCase();
   const studAvatar = ((studProfile?.firstName?.substring(0, 1) ?? '') + (studProfile?.secondName?.substring(0, 1) ?? '')).toUpperCase();
 
-  // const { data: session } = useSession();
-    let profileLink = '/Student/profile'; 
+    let profileLink = '/student/profile'; 
   
     if (session.data?.userType === 'LECTURER') {
-      profileLink = '/Lecturer/profile';
+      profileLink = '/lecturer/profile';
     } else if (session?.data?.userType === 'COD' ){
       profileLink = '/cod/profile';
     } else if (session?.data?.userType === 'DEAN'){
       profileLink = '/dean/profile';
     } else if (session?.data?.userType === 'ADMIN'){
-      profileLink = '/Admin/profile';
+      profileLink = '/admin/profile';
     } 
   
     const handleLogout = () => {

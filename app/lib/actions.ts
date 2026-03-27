@@ -100,7 +100,7 @@ export async function fetchStaffProfile(){
 }
 
 
-export async function fetchMissingReports(){
+export async function fetchMissingMarks(){
     const session = await getServerSession(authOptions);
     const email = session?.user?.email!;
 
@@ -118,8 +118,44 @@ export async function fetchMissingReports(){
             where: {
                 studentId: id,
             },
+            include: {
+                unit: {
+                    select: { 
+                        unitName: true,
+                        unitCode: true,
+                        lecturer: {
+                            select: {
+                                firstName: true,
+                                secondName: true,
+                            }
+                        }
+                    },
+                },
+                student: {
+                    include: {
+                        course: {
+                            select: {
+                                name: true,
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
         })
-        return reports;
+        return reports.map((item) => ({
+            id: item.id,
+            createdAt: item.createdAt,
+            unitCode: item.unit.unitCode,
+            unitName: item.unit.unitName,
+            lecturerName: `${item.unit.lecturer.firstName} ${item.unit.lecturer.secondName}`,
+            courseName: item.student.course.name,
+            examType: item.examType,
+            semester: item.semester,
+            status: item.reportStatus,
+        }));;
     }catch(error){
         console.error('Error fetching user missing mark reports:', error)
         throw new Error ("Failed to fetch missing mark reports")
@@ -138,18 +174,18 @@ export async function fetchReportNumbers(){
     const id = student?.id;
     
     try{
-        const TotalReports = await prisma.missingMarksReport.count({
+        const TotalMissingMarks = await prisma.missingMarksReport.count({
             where:{
                 studentId: id,
             }
         })
-        const pendingTotals = await prisma.missingMarksReport.count({
+        const pendingMissingMarks = await prisma.missingMarksReport.count({
             where:{
                 studentId: id,
                 reportStatus: "PENDING"
             }
         })
-        const markFoundTotals = await prisma.missingMarksReport.count({
+        const resolvedMissingMarks = await prisma.missingMarksReport.count({
             where:{
                 studentId: id,
                 reportStatus: "RESOLVED"
@@ -171,7 +207,7 @@ export async function fetchReportNumbers(){
                 }
             }
         })
-        return {TotalReports, pendingTotals, markFoundTotals, unitTotals} 
+        return {TotalMissingMarks, pendingMissingMarks, resolvedMissingMarks, unitTotals} 
     }catch(error){
         console.error("Error counting totals:", error)
         throw new Error("Could not count Reports")
@@ -356,9 +392,15 @@ export async function fetchLecturerMissingMarks(){
                 unitId: {
                     in: unitIds
                 },
-                // reportStatus: { in: ["FOR_FURTHER_INVESTIGATION", "PENDING"] }
+                reportStatus: { in: ["PENDING"] }
             },
             include:{
+                unit:{
+                    select:{ 
+                        unitCode: true, 
+                        unitName: true,
+                },
+                },
                 student: {
                     select:{
                         regNo: true,
@@ -411,7 +453,6 @@ export async function fetchLecturerUnits(){
         const totalUnits = units.length;
 
         const unitDetails = units.map((unit) => {
-            // const totalDepartments = school.departments.length;
             const totalStudents = unit.courses.reduce(
               (acc, course) => acc + course.course.students.length,
               0

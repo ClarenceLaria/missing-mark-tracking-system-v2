@@ -16,7 +16,7 @@ export default function page() {
       </div>
       <div className='flex flex-col items-center '>
         <h1 className='font-bold grid mb-5 text-lg'>Have any other questions?</h1>
-        <button className='flex justify-center rounded-3xl px-3 py-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-sky-500 hover:bg-sky-600 focus-visible:outline-sky-600'>Chat with us here</button>
+        <button className='flex justify-center rounded-3xl px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 bg-sky-500 hover:bg-sky-600 focus-visible:outline-sky-600'>Chat with us here</button>
       </div>
     </div>
   )
