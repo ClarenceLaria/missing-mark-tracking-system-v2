@@ -66,7 +66,8 @@ export function MissingMarksTable() {
     const handleReports = async () => {
       try{
         const report = await fetchLecturerMissingMarks();
-        setReports(report);
+        const fiveReports = report.slice(0,4);
+        setReports(fiveReports);
       }catch(error){
         console.error("Error fetching missing marks reports", error);
       }

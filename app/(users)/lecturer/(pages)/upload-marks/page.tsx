@@ -1,8 +1,9 @@
 "use client";
 
+import SingleMarkDialog from "@/app/components/lecturer/single-mark-dialog";
 import { Button } from "@/app/components/ui/button";
 import { fetchLecturerUnits } from "@/app/lib/actions";
-import { AlertCircle, FileSpreadsheet, Upload } from "lucide-react";
+import { AlertCircle, FileSpreadsheet, Plus, Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -18,6 +19,7 @@ export default function UploadMarksPage() {
   const [file, setFile] = useState<File | null>(null);
   const [unitId, setUnitId] = useState<string>("");
   const [units, setUnits] = useState<Unit[]>([]);
+  const [openSingle, setOpenSingle] = useState(false);
 
   useEffect(() => {
     const fetchUnits = async () => {
@@ -70,11 +72,25 @@ export default function UploadMarksPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {/* PAGE HEADER */}
-      <div>
-        <h1 className="text-2xl font-semibold">Upload Examination Marks</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Upload marks using an Excel file after marking is complete.
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-semibold">
+            Upload Examination Marks
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Upload marks using Excel or add a single missing mark.
+          </p>
+        </div>
+
+        {/* SINGLE MARK BUTTON */}
+        <Button
+          variant="outline"
+          onClick={() => setOpenSingle(true)}
+          className="cursor-pointer"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Single Mark
+        </Button>
       </div>
 
       {/* MAIN CARD */}
@@ -175,6 +191,13 @@ export default function UploadMarksPage() {
           </div>
         </form>
       </div>
+      {/* SINGLE MARK DIALOG */}
+      <SingleMarkDialog
+        open={openSingle}
+        onOpenChange={setOpenSingle}
+        units={units}
+        defaultUnitId={unitId}
+      />
     </div>
   );
 }
