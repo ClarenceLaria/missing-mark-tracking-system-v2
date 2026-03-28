@@ -51,7 +51,7 @@ export default function SingleMarkDialog({
     }
 
     try {
-      toast.loading("Submitting mark...");
+      toast.loading("Uploading mark...");
 
       const res = await fetch("/api/upload-single-mark", {
         method: "POST",
@@ -83,7 +83,7 @@ export default function SingleMarkDialog({
       }
     } catch (error) {
       toast.dismiss();
-      toast.error("Server error");
+      toast.error("Internal server error");
     }
   };
 
