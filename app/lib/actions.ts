@@ -392,7 +392,6 @@ export async function fetchLecturerMissingMarks(){
                 unitId: {
                     in: unitIds
                 },
-                reportStatus: { in: ["PENDING"] }
             },
             include:{
                 unit:{
