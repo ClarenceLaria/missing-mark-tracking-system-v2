@@ -141,7 +141,11 @@ export default function Page() {
                   <TableCell>{report.title}</TableCell>
                   <TableCell>{report.unitCode}</TableCell>
                   <TableCell>{report.date.toDateString()}</TableCell>
-                  <TableCell>{report.status}</TableCell>
+                  <TableCell className={`${
+                    report.status === "RESOLVED"
+                      ? "text-green-500 font-bold"
+                      : "text-destructive font-bold"
+                  }`}>{report.status}</TableCell>
                   <TableCell className="flex items-center gap-2">
                     <Button variant="ghost" size="icon" className="cursor-pointer"
                       onClick={() => {

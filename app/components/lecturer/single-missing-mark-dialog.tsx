@@ -10,7 +10,6 @@ import {
 } from "@/app/components/ui/dialog";
 import { Badge } from '@/app/components/ui/badge';
 import { ExamType, ReportStatus, Semester } from "@/app/generated/prisma/enums";
-import { useEffect, useState } from "react";
 
 interface MissingReport {
   id: number;
@@ -49,7 +48,7 @@ export default function SingleMissingMarkDialog ({
     const statusColor =
         report.reportStatus === 'RESOLVED'
         ? 'bg-green-100 text-green-700'
-        : 'bg-yellow-100 text-yellow-700';
+        : 'bg-yellow-100 text-destructive';
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-2xl">
