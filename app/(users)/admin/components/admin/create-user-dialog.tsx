@@ -31,7 +31,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { fetchDepartments, fetchSchools } from "@/app/lib/actions";
 import toast from "react-hot-toast";
-import dotenv from 'dotenv'
 
 const formSchema = z.object({
   fName: z.string().min(1, "First Name is required"),
@@ -93,7 +92,6 @@ export function CreateUserDialog({ open }: CreateUserDialogProps) {
     },
   });
 
-  dotenv.config();
   const email = form.getValues('email');
   const regNo = form.getValues('regNo')!;
   const schoolId = parseInt(form.getValues('school')!);

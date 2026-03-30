@@ -235,4 +235,5 @@ enum ExamSuspensionStatus {
 enum ResolutionNote {
   DID_NOT_SIT_EXAM
   DID_NOT_REGISTER
+  DID_NOT_SIT_EXAM_AND_DID_NOT_REGISTER
 }

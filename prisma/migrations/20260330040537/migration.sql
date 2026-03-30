@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "ResolutionNote" ADD VALUE 'DID_NOT_SIT_EXAM_AND_DID_NOT_REGISTER';

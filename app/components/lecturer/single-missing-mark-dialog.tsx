@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/app/components/ui/dialog";
 import { Badge } from '@/app/components/ui/badge';
-import { ExamType, ReportStatus, Semester } from "@/app/generated/prisma/enums";
+import { ExamType, ReportStatus, ResolutionNote, Semester } from "@/app/generated/prisma/enums";
 
 interface MissingReport {
   id: number;
@@ -20,15 +20,23 @@ interface MissingReport {
   academicYear: string;
   semester: Semester;
   yearOfStudy: number;
+  resolutionNote: ResolutionNote | null;
   reportStatus: ReportStatus;
+  isRegistered: boolean;
   student: {
+    id: number;
     firstName: string;
     secondName: string;
     regNo: string;
   };
   unit: {
-      unitCode: string;
-      unitName: string;
+    unitName: string;
+    unitCode: string;
+    registeredUnits: {
+        registration: {
+            studentId: number;
+        };
+    }[];
   };
 }
 
