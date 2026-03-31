@@ -201,8 +201,6 @@ enum ExamType {
   MAIN
   SPECIAL
   SUPPLIMENTARY
-  CAT
-  MAIN_AND_CAT
 }
 
 enum Semester {
