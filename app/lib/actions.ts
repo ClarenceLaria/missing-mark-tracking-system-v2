@@ -398,10 +398,20 @@ export async function fetchLecturerMissingMarks(){
                     select:{ 
                         unitCode: true, 
                         unitName: true,
-                },
+                        registeredUnits: {
+                            select: {
+                                registration: {
+                                    select: {
+                                        studentId: true,
+                                    }
+                                }
+                            }
+                        }
+                    }
                 },
                 student: {
                     select:{
+                        id: true,
                         regNo: true,
                         firstName: true,
                         secondName: true,
@@ -409,7 +419,19 @@ export async function fetchLecturerMissingMarks(){
                 },
             },
         })
-        return reports;
+
+        const enrichedReports = reports.map((report) => {
+        const isRegistered = report.unit.registeredUnits.some(
+            (reg) => reg.registration.studentId === report.student.id
+        );
+
+        return {
+            ...report,
+            isRegistered,
+        };
+        });
+
+        return enrichedReports;
     }catch(error){
         console.error("Error fetching missing marks:", error)
         throw new Error("Could not fetch missing marks")

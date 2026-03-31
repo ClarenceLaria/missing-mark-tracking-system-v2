@@ -2,10 +2,12 @@
 
 import SingleMarkDialog from "@/app/components/lecturer/single-mark-dialog";
 import { Button } from "@/app/components/ui/button";
+import { ExamType } from "@/app/generated/prisma/enums";
 import { fetchLecturerUnits } from "@/app/lib/actions";
 import { AlertCircle, FileSpreadsheet, Plus, Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { set } from "zod";
 
 type Unit = {
   id: number;
@@ -15,8 +17,11 @@ type Unit = {
   totalStudents: number;
 };
 
+const examTypeOptions = Object.values(ExamType);
+
 export default function UploadMarksPage() {
   const [file, setFile] = useState<File | null>(null);
+  const [examType, setExamType] = useState<string>("");
   const [unitId, setUnitId] = useState<string>("");
   const [units, setUnits] = useState<Unit[]>([]);
   const [openSingle, setOpenSingle] = useState(false);
@@ -45,6 +50,7 @@ export default function UploadMarksPage() {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("unitId", unitId);
+    formData.append("examType", examType);
 
     try{
       toast.loading("Uploading marks...");
@@ -58,6 +64,7 @@ export default function UploadMarksPage() {
       if (res.ok || res.status == 200) {
         setFile(null);
         setUnitId("");
+        setExamType("");
         console.log("Marks uploaded successfully", data);
         toast.success("Marks uploaded successfully");
       } else if (res.status == 400) {
@@ -96,23 +103,47 @@ export default function UploadMarksPage() {
       {/* MAIN CARD */}
       <div className="rounded-2xl border bg-card shadow-sm">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* UNIT SELECTION */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Academic Unit
-            </label>
-            <select
-              value={unitId}
-              onChange={(e) => setUnitId(e.target.value)}
-              className="w-full rounded-lg border px-3 py-2 text-sm"
-            >
-              <option value="">Select unit</option>
-              {units.map((unit) => (
-                <option key={unit.id} value={unit.id}>
-                  {unit.code} — {unit.name}
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-2 space-x-6 justify-between">
+            {/* EXAMTYPE SELECTION */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Exam Type
+              </label>
+              <select
+                value={examType}
+                onChange={(e) =>
+                  setExamType(e.target.value as ExamType)
+                }
+                className="w-full rounded-lg border px-3 py-2 text-sm"
+              >
+                <option value="">Select exam type</option>
+
+                {examTypeOptions.map((type) => (
+                  <option key={type} value={type}>
+                    {type.replaceAll("_", " ")}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* UNIT SELECTION */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Academic Unit
+              </label>
+              <select
+                value={unitId}
+                onChange={(e) => setUnitId(e.target.value)}
+                className="w-full rounded-lg border px-3 py-2 text-sm"
+              >
+                <option value="">Select unit</option>
+                {units.map((unit) => (
+                  <option key={unit.id} value={unit.id}>
+                    {unit.code} — {unit.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* FILE UPLOAD */}

@@ -82,7 +82,7 @@ export function DepartmentList() {
               <TableRow key={dept.id}>
                 <TableCell className="font-medium">{dept.name}</TableCell>
                 <TableCell>{dept.cod?.firstName+ " " + dept.cod?.secondName}</TableCell>
-                <TableCell>{dept.totalLecturers}</TableCell>
+                <TableCell>{dept.totalStudents}</TableCell>
                 <TableCell>{dept.totalLecturers}</TableCell>
               </TableRow>
             ))}

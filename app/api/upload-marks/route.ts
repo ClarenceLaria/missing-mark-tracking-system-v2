@@ -1,144 +1,169 @@
 import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 import { prisma } from "@/app/lib/prismadb";
+import { ExamType } from "@/app/generated/prisma/enums";
 
 export async function POST(req: Request) {
-  if (req.method !== 'POST') {
-    return new Response (JSON.stringify({ message: 'Method Not Allowed'}), {status: 405});
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ message: "Method Not Allowed" }),
+      { status: 405 }
+    );
   }
-  
+
   try {
     const formData = await req.formData();
 
     const unitIdRaw = formData.get("unitId") as string;
-    const file = formData.get("file") as File || null;
-    if (!file) {
-      return NextResponse.json(
-        { error: "Excel file is required" },
-        { status: 400 }
-      );
+    const examTypeRaw = formData.get("examType") as string;
+    const file = formData.get("file") as File;
+
+    if (!file) return NextResponse.json({ error: "Excel file is required" }, { status: 400 });
+    if (!unitIdRaw) return NextResponse.json({ error: "unitId is required" }, { status: 400 });
+    if (!examTypeRaw || !Object.values(ExamType).includes(examTypeRaw as ExamType)) {
+      return NextResponse.json({ error: "Invalid exam type" }, { status: 400 });
     }
-    if (!unitIdRaw) {
-      return NextResponse.json(
-        { error: "unitId is required" },
-        { status: 400 }
-      );
-    }
+
     const unitId = Number(unitIdRaw);
 
-    //Read Excel file
+    // Read Excel
     const buffer = Buffer.from(await file.arrayBuffer());
     const workbook = XLSX.read(buffer, { type: "buffer" });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows: any[] = XLSX.utils.sheet_to_json(sheet);
 
-    if (!rows.length) {
-      return NextResponse.json(
-        { error: "Excel file is empty" },
-        { status: 400 }
-      );
-    }
+    if (!rows.length) return NextResponse.json({ error: "Excel file is empty" }, { status: 400 });
 
-    // Fetch nominal roll (registered students)
+    // Extract RegNos
+    const regNos = rows.map(r => String(r.regNo || "").trim()).filter(Boolean);
+
+    // Fetch Unit
+    const unit = await prisma.unit.findUnique({ where: { id: unitId } });
+    if (!unit) return NextResponse.json({ error: "Unit not found" }, { status: 404 });
+
+    // Fetch relevant students
+    const students = await prisma.student.findMany({
+      where: { regNo: { in: regNos } },
+    });
+    const studentMap = new Map(students.map(s => [s.regNo, s]));
+
+    // Fetch registrations for this unit (single query)
     const registrations = await prisma.registeredUnit.findMany({
-      where: {
-        unitId
-      },
+      where: { unitId },
       include: {
         registration: {
-          include: {
-            student: true,
-          }
-        }
-      }
+          select: {
+            feesCleared: true,
+            student: { select: { id: true, regNo: true } },
+          },
+        },
+      },
     });
 
-    const registeredStudents = registrations.map(r => r.registration.student);
-    const studentByRegNo = new Map(
-      registeredStudents.map((student) => [student.regNo, student])
-    )
-    const uploadedStudentIds = new Set<number>();
+    const nominalSet = new Set<string>();
+    const unpaidSet = new Set<string>();
+    for (const r of registrations) {
+      const { student, feesCleared } = r.registration;
+      if (feesCleared) nominalSet.add(student.regNo);
+      else unpaidSet.add(student.regNo);
+    }
 
-    // upsert(if the mark exists it updates otherwise creates) marks
+    // Prepare bulk arrays
+    const examMarksToCreate: any[] = [];
+    const suspendedMarksToCreate: any[] = [];
+    const uploadedStudentIds = new Set<number>();
+    const unknownStudents: string[] = [];
+
+    // Process Excel rows
     for (const row of rows) {
       const regNo = String(row.regNo || "").trim();
-      const student = studentByRegNo.get(regNo);
+      if (!regNo) continue;
 
-      if (!student) continue;
-
-      const exam =
-        row.examResult !== undefined ? Number(row.examResult) : null;
-      const cat =
-        row.catResult !== undefined ? Number(row.catResult) : null;
+      const exam = row.examResult !== undefined && row.examResult !== "" ? Number(row.examResult) : null;
+      const cat = row.catResult !== undefined && row.catResult !== "" ? Number(row.catResult) : null;
 
       if (exam === null && cat === null) continue;
 
-      const mark = await prisma.examMark.upsert({
-        where: {
-          unitId_studentId: {
-            unitId,
-            studentId: student.id,
-          },
-        },
-        update: {
-          ...(exam !== null && { examResult: exam }),
-          ...(cat !== null && { catResult: cat }),
-        },
-        create: {
-          unitId,
+      const student = studentMap.get(regNo);
+      if (!student) {
+        unknownStudents.push(regNo);
+        continue;
+      }
+
+      const isNominal = nominalSet.has(regNo);
+      const isUnpaid = unpaidSet.has(regNo);
+
+      let reason: string | null = null;
+
+      if (!isNominal && isUnpaid) reason = "FEES_NOT_CLEARED";
+      else if (!isNominal) reason = "DID_NOT_REGISTER";
+
+      if (reason) {
+        suspendedMarksToCreate.push({
           studentId: student.id,
+          unitId,
           examResult: exam ?? 0,
           catResult: cat ?? 0,
-        },
-        select: { studentId: true },
+          reason,
+        });
+        continue;
+      }
+
+      // Nominal student → valid
+      examMarksToCreate.push({
+        studentId: student.id,
+        unitId,
+        examResult: exam ?? 0,
+        catResult: cat ?? 0,
       });
 
-      uploadedStudentIds.add(mark.studentId);
+      uploadedStudentIds.add(student.id);
     }
 
-    // DETECT MISSING MARKS
-    const missingStudents = registeredStudents.filter(
-      (s) => !uploadedStudentIds.has(s.id)
-    );
+    // Bulk inserts
+    if (examMarksToCreate.length) {
+      await prisma.examMark.createMany({
+        data: examMarksToCreate,
+        skipDuplicates: true, // or consider upsert if you expect re-uploads
+      });
+    }
 
-    const unit = await prisma.unit.findUnique({
-      where: { id: unitId },
-    });
+    if (suspendedMarksToCreate.length) {
+      await prisma.suspendedExamMark.createMany({ data: suspendedMarksToCreate });
+    }
 
-    for (const student of missingStudents) {
-      await prisma.missingMarksReport.upsert({
-        where: {
-          studentId_unitId_examType_academicYear_semester: {
-            studentId: student.id,
-            unitId: unitId,
-            examType: "MAIN",
-            academicYear: unit!.academicYear,
-            semester: unit!.semester,
-          }
-        },
-        update: {},
-        create: {
-          studentId: student.id,
-          unitId: unitId,
-          examType: "MAIN",
-          academicYear: unit!.academicYear,
-          semester: unit!.semester,
-          yearOfStudy: unit!.yearOfStudy,
-        },
+    // Detect missing marks (nominal students not uploaded)
+    const missingStudents = registrations
+      .filter(r => r.registration.feesCleared)
+      .map(r => r.registration.student)
+      .filter(s => !uploadedStudentIds.has(s.id));
+
+    const missingReports = missingStudents.map(student => ({
+      studentId: student.id,
+      unitId,
+      examType: examTypeRaw as ExamType,
+      academicYear: unit.academicYear,
+      semester: unit.semester,
+      yearOfStudy: unit.yearOfStudy,
+    }));
+
+    if (missingReports.length) {
+      await prisma.missingMarksReport.createMany({
+        data: missingReports,
+        skipDuplicates: true,
       });
     }
 
     return NextResponse.json({
       success: true,
-      uploaded: uploadedStudentIds.size,
-      missingStudents: missingStudents,
-      missing: missingStudents.length,
+      uploaded: examMarksToCreate.length,
+      suspended: suspendedMarksToCreate.length,
+      missing: missingReports.length,
+      unknownStudents, // optional for debugging
     }, { status: 200 });
+
   } catch (error) {
     console.error("Error uploading marks:", error);
-    return NextResponse.json(
-      { error: "Server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

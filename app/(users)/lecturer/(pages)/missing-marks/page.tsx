@@ -19,7 +19,7 @@ import { Trash2, EyeIcon } from "lucide-react";
 import React,{Suspense, useEffect, useState} from 'react'
 import Search from '@/app/(users)/student/components/Search'
 import { fetchDepartmentReports, fetchLecturerMissingMarks } from '@/app/lib/actions';
-import { ExamType, ReportStatus, Semester } from '@/app/generated/prisma/enums';
+import { ExamType, ReportStatus, ResolutionNote, Semester } from '@/app/generated/prisma/enums';
 import Loader from '@/app/components/Loader';
 import SingleMissingMarkDialog from "@/app/components/lecturer/single-missing-mark-dialog";
 
@@ -33,15 +33,23 @@ interface MissingReport {
   academicYear: string;
   semester: Semester;
   yearOfStudy: number;
+  resolutionNote: ResolutionNote | null;
   reportStatus: ReportStatus;
+  isRegistered: boolean;
   student: {
+    id: number;
     firstName: string;
     secondName: string;
     regNo: string;
   };
   unit: {
-      unitCode: string;
-      unitName: string;
+    unitName: string;
+    unitCode: string;
+    registeredUnits: {
+        registration: {
+            studentId: number;
+        };
+    }[];
   };
 }
 export default function Page() {
