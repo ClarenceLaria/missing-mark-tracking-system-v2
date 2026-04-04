@@ -1652,3 +1652,73 @@ export async function fetchDepartmentsBySchoolId(schoolId: number) {
         console.error("Error checking student's year :", error);
     }
   }
+
+export async function payFee(
+  studentId: number,
+  academicYear: string,
+  semester: Semester,
+  feeStatus: boolean
+) {
+  try {
+    return await prisma.$transaction(async (tx) => {
+
+      // 1. Update fee status (correct unique constraint)
+      const updatedRegistration = await tx.semesterRegistration.update({
+        where: {
+          studentId_academicYear_semester: {
+            studentId,
+            academicYear,
+            semester,
+          },
+        },
+        data: {
+          feesCleared: feeStatus,
+        },
+      });
+
+      // If fees not cleared → nothing else to do
+      if (!feeStatus) return updatedRegistration;
+
+      // 2. Fetch suspended marks
+      const suspendedMarks = await tx.suspendedExamMark.findMany({
+        where: {
+          studentId,
+          status: "SUSPENDED",
+        },
+      });
+
+      if (!suspendedMarks.length) return updatedRegistration;
+
+      // 3. Release suspended marks
+      await tx.suspendedExamMark.updateMany({
+        where: {
+          studentId,
+          status: "SUSPENDED",
+        },
+        data: {
+          status: "RELEASED",
+        },
+      });
+
+      // 4. Prepare exam marks (bulk)
+      const examMarksData = suspendedMarks.map((mark) => ({
+        studentId,
+        unitId: mark.unitId,
+        examResult: mark.examResult,
+        catResult: mark.catResult,
+      }));
+
+      // 5. Insert safely (avoid duplicates)
+      await tx.examMark.createMany({
+        data: examMarksData,
+        skipDuplicates: true,
+      });
+
+      return updatedRegistration;
+    });
+
+  } catch (err: any) {
+    console.error("Error paying fees:", err);
+    throw err;
+  }
+}
