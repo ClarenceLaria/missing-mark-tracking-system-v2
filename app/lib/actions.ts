@@ -1722,3 +1722,43 @@ export async function payFee(
     throw err;
   }
 }
+
+export async function fetchLecSuspendedmarks () {
+    try {
+        const session = await getServerSession(authOptions);
+        const email = session?.user?.email!;
+
+        const lecturer = await prisma.staff.findUnique({
+            where: {email},
+            select: {id:true}
+        });
+        
+        if (!lecturer) return;
+
+        const suspendedMarks = await prisma.suspendedExamMark.findMany({
+            where: {
+                unit: {lecturerId: lecturer.id}
+            },
+            include: {
+                student: {
+                    select: {
+                        id: true,
+                        regNo: true,
+                        firstName: true,
+                        secondName: true
+                    }
+                },
+                unit: {
+                    select: {
+                        unitCode: true,
+                        unitName: true,
+                    }
+                }
+            }
+        });
+
+        return suspendedMarks;
+    } catch (err: any) {
+        console.log("Error fetching suspended marks: ", err);
+    }
+}
