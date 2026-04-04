@@ -1762,3 +1762,35 @@ export async function fetchLecSuspendedmarks () {
         console.log("Error fetching suspended marks: ", err);
     }
 }
+
+export async function fetchStudentSuspendedmarks () {
+    try {
+        const session = await getServerSession(authOptions);
+        const email = session?.user?.email!;
+
+        const student = await prisma.student.findUnique({
+            where: {email},
+            select: {id:true}
+        });
+        
+        if (!student) return;
+
+        const suspendedMarks = await prisma.suspendedExamMark.findMany({
+            where: {
+                studentId: student.id
+            },
+            include: {
+                unit: {
+                    select: {
+                        unitCode: true,
+                        unitName: true,
+                    }
+                }
+            }
+        });
+
+        return suspendedMarks;
+    } catch (err: any) {
+        console.log("Error fetching suspended marks: ", err);
+    }
+}
