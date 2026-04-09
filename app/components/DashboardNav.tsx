@@ -138,6 +138,11 @@ const routes = {
       href: "/student/reported",
     },
     {
+      title: "My Suspended Marks",
+      icon: FileSpreadsheet,
+      href: "/student/suspended-marks",
+    },
+    {
       title: "Help",
       icon: QuestionMarkCircleIcon,
       href: "/student/help",
