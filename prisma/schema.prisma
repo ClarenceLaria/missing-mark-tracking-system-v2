@@ -28,6 +28,7 @@ model Staff {
   schoolId    Int
   userStatus  UserStatus @default(inactive)
   units       Unit[]
+  nominallRolls NominalRoll[]
 }
 
 model Student {
@@ -96,6 +97,7 @@ model Unit {
   missingMarks  MissingMarksReport[]
   registeredUnits RegisteredUnit[]
   suspendedMarks SuspendedExamMark[]
+  nominalrolls  NominalRoll[]
 }
 
 model UnitCourse {
@@ -185,6 +187,24 @@ model Notification {
   read        Boolean  @default(false)
 
   report      MissingMarksReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}
+
+model NominalRoll {
+  id            String   @id @default(uuid())
+  createdAt     DateTime @default(now())
+
+  unitId        Int
+  academicYear  String
+  semester      Semester
+  examType      ExamType
+
+  fileUrl       String   
+  uploadedById  Int
+
+  unit          Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  uploadedBy    Staff    @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  @@unique([unitId, academicYear, semester, examType])
 }
 
 
