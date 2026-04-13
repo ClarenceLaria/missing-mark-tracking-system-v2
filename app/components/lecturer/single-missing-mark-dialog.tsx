@@ -20,7 +20,7 @@ interface MissingReport {
   academicYear: string;
   semester: Semester;
   yearOfStudy: number;
-  resolutionNote: ResolutionNote | null;
+  reason: string| null;
   reportStatus: ReportStatus;
   isRegistered: boolean;
   student: {

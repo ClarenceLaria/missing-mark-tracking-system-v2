@@ -18,8 +18,8 @@ import { Button } from "@/app/components/ui/button";
 import { Trash2, EyeIcon } from "lucide-react";
 import React,{Suspense, useEffect, useState} from 'react'
 import Search from '@/app/(users)/student/components/Search'
-import { fetchDepartmentReports, fetchLecturerMissingMarks } from '@/app/lib/actions';
-import { ExamType, ReportStatus, ResolutionNote, Semester } from '@/app/generated/prisma/enums';
+import { fetchLecturerMissingAndSuspendedMarks } from '@/app/lib/actions';
+import { ExamSuspensionStatus, ExamType, ReportStatus, ResolutionNote, Semester } from '@/app/generated/prisma/enums';
 import Loader from '@/app/components/Loader';
 import SingleMissingMarkDialog from "@/app/components/lecturer/single-missing-mark-dialog";
 
@@ -33,7 +33,7 @@ interface MissingReport {
   academicYear: string;
   semester: Semester;
   yearOfStudy: number;
-  resolutionNote: ResolutionNote | null;
+  reason: string | null;
   reportStatus: ReportStatus;
   isRegistered: boolean;
   student: {
@@ -52,8 +52,47 @@ interface MissingReport {
     }[];
   };
 }
+
+interface SuspendedMark {
+  id: number;
+  createdAt: Date;
+  studentId: number;
+  unitId: number;
+  reason: string;
+  examResult: number;
+  catResult: number;
+  status: ExamSuspensionStatus;
+  student: {
+    id: number;
+    firstName: string;
+    secondName: string;
+    regNo: string;
+  };
+  unit: {
+    unitName: string;
+    unitCode: string;
+    registeredUnits: {
+        registration: {
+            studentId: number;
+        };
+    }[];
+  };
+}
+
+type combinedMarks = {
+  id: number;
+  type: "MISSING MARK" | "SUSPENDED MARK";
+  name: string;
+  regNo: string;
+  title: string;
+  unitCode: string;
+  reason: string | null;
+  date: Date;
+  status: string;
+}
 export default function Page() {
-    const [reports, setReport] = useState<MissingReport[]>([]);
+    const [missingMarks, setMissingMarks] = useState<MissingReport[]>([]);
+    const [suspendedMarks, setSuspendedMarks] = useState<SuspendedMark[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState<string | null>(null);
     const [searchDate, setSearchDate] = useState<Date | null>(null);
@@ -65,8 +104,9 @@ export default function Page() {
         const handleReports = async () => {
             try{
                 setLoading(true);
-                const reports = await fetchLecturerMissingMarks();
-                setReport(reports || []);
+                const reports = await fetchLecturerMissingAndSuspendedMarks();
+                setMissingMarks(reports.enrichedMissingMarks || []);
+                setSuspendedMarks(reports.suspendedMarks || []);
                 setLoading(false);
             }catch(error){
                 console.error('Error fetching reports:', error)
@@ -75,14 +115,15 @@ export default function Page() {
         handleReports();
     },[])
 
-    const transformedReports = reports.map(report => ({
-        id: report.id,
-        name: `${report.student.firstName} ${report.student.secondName}`,
-        regNo: report.student.regNo,
-        title: report.unit.unitName,
-        unitCode: report.unit.unitCode,
-        date: report.createdAt,
-        status: report.reportStatus,
+    const transformedReports = missingMarks.map(missingMark => ({
+        id: missingMark.id,
+        name: `${missingMark.student.firstName} ${missingMark.student.secondName}`,
+        regNo: missingMark.student.regNo,
+        title: missingMark.unit.unitName,
+        unitCode: missingMark.unit.unitCode,
+        reason: missingMark.reason,
+        date: missingMark.createdAt,
+        status: missingMark.reportStatus,
       }));
     
       if(loading) return <Loader/>;
@@ -105,10 +146,7 @@ export default function Page() {
     <div className="space-y-6">
     <div className="flex justify-between items-center">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Department</h2>
-        <p className="text-muted-foreground">
-          Manage Department reports
-        </p>
+        <h2 className="text-2xl font-bold tracking-tight">Marks Management</h2>
       </div>
       <div>
         <Suspense fallback={<Loading/>}>
@@ -124,8 +162,8 @@ export default function Page() {
 
     <Card>
       <CardHeader>
-        <CardTitle>Reports</CardTitle>
-        <CardDescription>A list of all department reports</CardDescription>
+        <CardTitle>Missing and Suspended Marks</CardTitle>
+        <CardDescription>Missing and Suspended Marks for Your Units</CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
@@ -135,6 +173,8 @@ export default function Page() {
               <TableHead>Student&apos;s RegNo</TableHead>
               <TableHead>Course Title</TableHead>
               <TableHead>Course Code</TableHead>
+              <TableHead>Mark Type</TableHead>
+              <TableHead>Reason</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
@@ -148,6 +188,8 @@ export default function Page() {
                   <TableCell className="font-medium">{report.regNo}</TableCell>
                   <TableCell>{report.title}</TableCell>
                   <TableCell>{report.unitCode}</TableCell>
+                  <TableCell><h1>Missing or suspended mark</h1></TableCell>
+                  <TableCell>{report.reason}</TableCell>
                   <TableCell>{report.date.toDateString()}</TableCell>
                   <TableCell className={`${
                     report.status === "RESOLVED"
@@ -157,7 +199,7 @@ export default function Page() {
                   <TableCell className="flex items-center gap-2">
                     <Button variant="ghost" size="icon" className="cursor-pointer"
                       onClick={() => {
-                        const fullReport = reports.find(r => r.id === report.id);
+                        const fullReport = missingMarks.find(r => r.id === report.id);
                         setSelectedReport(fullReport || null);
                         setOpen(true);
                       }}>
