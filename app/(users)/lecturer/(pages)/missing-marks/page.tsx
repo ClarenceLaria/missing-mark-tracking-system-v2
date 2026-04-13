@@ -78,18 +78,6 @@ interface SuspendedMark {
     }[];
   };
 }
-
-type combinedMarks = {
-  id: number;
-  type: "MISSING MARK" | "SUSPENDED MARK";
-  name: string;
-  regNo: string;
-  title: string;
-  unitCode: string;
-  reason: string | null;
-  date: Date;
-  status: string;
-}
 export default function Page() {
     const [missingMarks, setMissingMarks] = useState<MissingReport[]>([]);
     const [suspendedMarks, setSuspendedMarks] = useState<SuspendedMark[]>([]);
@@ -115,20 +103,35 @@ export default function Page() {
         handleReports();
     },[])
 
-    const transformedReports = missingMarks.map(missingMark => ({
-        id: missingMark.id,
-        name: `${missingMark.student.firstName} ${missingMark.student.secondName}`,
-        regNo: missingMark.student.regNo,
-        title: missingMark.unit.unitName,
-        unitCode: missingMark.unit.unitCode,
-        reason: missingMark.reason,
-        date: missingMark.createdAt,
-        status: missingMark.reportStatus,
+    const transformedMissing = missingMarks.map(m => ({
+        id: m.id,
+        type: "MISSING",
+        name: `${m.student.firstName} ${m.student.secondName}`,
+        regNo: m.student.regNo,
+        title: m.unit.unitName,
+        unitCode: m.unit.unitCode,
+        reason: m.reason,
+        date: new Date(m.createdAt),
+        status: m.reportStatus,
       }));
+
+    const transformedSuspended = suspendedMarks.map(s => ({
+      id: s.id,
+      type: "SUSPENDED",
+      name: `${s.student.firstName} ${s.student.secondName}`,
+      regNo: s.student.regNo,
+      title: s.unit.unitName,
+      unitCode: s.unit.unitCode,
+      reason: s.reason,
+      date: new Date(s.createdAt),
+      status: s.status,
+    }));
+
+    const combinedMarks = [...transformedMissing, ...transformedSuspended].sort((a,b) => b.date.getTime() - a.date.getTime());
     
       if(loading) return <Loader/>;
     
-      const filteredReports = transformedReports.filter(
+      const filteredReports = combinedMarks.filter(
         (report) => {
           const matchesSearchTerm =
           !searchTerm ||
@@ -188,7 +191,7 @@ export default function Page() {
                   <TableCell className="font-medium">{report.regNo}</TableCell>
                   <TableCell>{report.title}</TableCell>
                   <TableCell>{report.unitCode}</TableCell>
-                  <TableCell><h1>Missing or suspended mark</h1></TableCell>
+                  <TableCell>{report.type === "MISSING" ? "Missing Mark" : "Suspended Mark"}</TableCell>
                   <TableCell>{report.reason}</TableCell>
                   <TableCell>{report.date.toDateString()}</TableCell>
                   <TableCell className={`${
@@ -199,9 +202,13 @@ export default function Page() {
                   <TableCell className="flex items-center gap-2">
                     <Button variant="ghost" size="icon" className="cursor-pointer"
                       onClick={() => {
-                        const fullReport = missingMarks.find(r => r.id === report.id);
-                        setSelectedReport(fullReport || null);
-                        setOpen(true);
+                        if (report.type === "MISSING") {
+                          const fullReport = missingMarks.find(r => r.id === report.id);
+                          setSelectedReport(fullReport || null);
+                          setOpen(true);
+                        } else {
+                          // handle suspended mark (different dialog or logic)
+                        }
                       }}>
                       <EyeIcon className="h-4 w-4" />
                     </Button>
