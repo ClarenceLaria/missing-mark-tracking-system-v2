@@ -195,7 +195,7 @@ export default function Page() {
                   <TableCell>{report.reason}</TableCell>
                   <TableCell>{report.date.toDateString()}</TableCell>
                   <TableCell className={`${
-                    report.status === "RESOLVED"
+                    report.status === "RESOLVED" || report.status === "RELEASED"
                       ? "text-green-500 font-bold"
                       : "text-destructive font-bold"
                   }`}>{report.status}</TableCell>

@@ -3,6 +3,13 @@ import * as XLSX from "xlsx";
 import { prisma } from "@/app/lib/prismadb";
 import { ExamType } from "@/app/generated/prisma/enums";
 
+function getMissingReason(cat: number | null, exam: number | null) {
+  if (cat === null && exam === null) return "MISSING_CAT_AND_EXAM";
+  if (cat === null) return "MISSING_CAT";
+  if (exam === null) return "MISSING_EXAM";
+  return null;
+}
+
 export async function POST(req: Request) {
   if (req.method !== "POST") {
     return new Response(
@@ -71,6 +78,7 @@ export async function POST(req: Request) {
     // Prepare bulk arrays
     const examMarksToCreate: any[] = [];
     const suspendedMarksToCreate: any[] = [];
+    const missingMarksFromRows: any[] = [];
     const uploadedStudentIds = new Set<number>();
     const unknownStudents: string[] = [];
 
@@ -79,10 +87,8 @@ export async function POST(req: Request) {
       const regNo = String(row.regNo || "").trim();
       if (!regNo) continue;
 
-      const exam = row.examResult !== undefined && row.examResult !== "" ? Number(row.examResult) : null;
-      const cat = row.catResult !== undefined && row.catResult !== "" ? Number(row.catResult) : null;
-
-      if (exam === null && cat === null) continue;
+      const exam = row.exam !== undefined && row.exam !== "" ? Number(row.exam) : null;
+      const cat = row.cat !== undefined && row.cat !== "" ? Number(row.cat) : null;
 
       const student = studentMap.get(regNo);
       if (!student) {
@@ -93,20 +99,36 @@ export async function POST(req: Request) {
       const isNominal = nominalSet.has(regNo);
       const isUnpaid = unpaidSet.has(regNo);
 
-      let reason: string | null = null;
+      let suspensionReason: string | null = null;
 
-      if (!isNominal && isUnpaid) reason = "FEES_NOT_CLEARED";
-      else if (!isNominal) reason = "DID_NOT_REGISTER";
+      if (!isNominal && isUnpaid) suspensionReason = "FEES_NOT_CLEARED";
+      else if (!isNominal) suspensionReason = "DID_NOT_REGISTER";
 
-      if (reason) {
+      if (suspensionReason) {
         suspendedMarksToCreate.push({
           studentId: student.id,
           unitId,
           examResult: exam ?? 0,
           catResult: cat ?? 0,
-          reason,
+          reason: suspensionReason,
         });
         continue;
+      }
+
+      const missingReason = getMissingReason(cat, exam);
+
+      // Now handle nominal students
+      if (missingReason) {
+        // Student exists BUT has incomplete marks → Missing Report
+        missingMarksFromRows.push({
+          studentId: student.id,
+          unitId,
+          examType: examTypeRaw as ExamType,
+          academicYear: unit.academicYear,
+          semester: unit.semester,
+          yearOfStudy: unit.yearOfStudy,
+          reason: missingReason,
+        });
       }
 
       // Nominal student → valid
@@ -138,18 +160,21 @@ export async function POST(req: Request) {
       .map(r => r.registration.student)
       .filter(s => !uploadedStudentIds.has(s.id));
 
-    const missingReports = missingStudents.map(student => ({
+    const missingMarksFromAbsence = missingStudents.map(student => ({
       studentId: student.id,
       unitId,
       examType: examTypeRaw as ExamType,
       academicYear: unit.academicYear,
       semester: unit.semester,
       yearOfStudy: unit.yearOfStudy,
+      reason: "MISSING_CAT_AND_EXAM"
     }));
 
-    if (missingReports.length) {
+    const allMissingMarks = [...missingMarksFromRows, ...missingMarksFromAbsence];
+
+    if (allMissingMarks.length) {
       await prisma.missingMarksReport.createMany({
-        data: missingReports,
+        data: allMissingMarks,
         skipDuplicates: true,
       });
     }
@@ -158,8 +183,8 @@ export async function POST(req: Request) {
       success: true,
       uploaded: examMarksToCreate.length,
       suspended: suspendedMarksToCreate.length,
-      missing: missingReports.length,
-      unknownStudents, // optional for debugging
+      missing: allMissingMarks.length,
+      unknownStudents,
     }, { status: 200 });
 
   } catch (error) {
