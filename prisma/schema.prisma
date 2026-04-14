@@ -169,7 +169,7 @@ model MissingMarksReport {
   academicYear  String
   semester      Semester
   yearOfStudy   Int
-  resolutionNote ResolutionNote?
+  reason        MissingMarkReason?
   reportStatus  ReportStatus @default(PENDING)
   student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   unit          Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade) 
@@ -212,7 +212,9 @@ enum UserType {
   SUPERADMIN
   ADMIN
   DEAN
+  SCHOOL_EXAM_COORDINATOR
   COD
+  DEPT_EXAM_COORDINATOR
   LECTURER
   STUDENT
 }
@@ -248,6 +250,12 @@ enum AttendanceStatus {
 enum ExamSuspensionStatus {
   SUSPENDED
   RELEASED
+}
+
+enum MissingMarkReason {
+  MISSING_CAT
+  MISSING_EXAM
+  MISSING_CAT_AND_EXAM
 }
 
 enum ResolutionNote {

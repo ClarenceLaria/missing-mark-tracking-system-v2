@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "@/app/components/ui/table";
 import { useEffect, useState } from "react";
-import { fetchLecturerMissingMarks } from "../../lib/actions";
+import { fetchLecturerMissingAndSuspendedMarks } from "../../lib/actions";
 import { ExamType, ReportStatus, Semester } from '@/app/generated/prisma/enums';
 
 const reports = [
@@ -65,8 +65,8 @@ export function MissingMarksTable() {
   useEffect(() => {
     const handleReports = async () => {
       try{
-        const report = await fetchLecturerMissingMarks();
-        const fiveReports = report.slice(0,4);
+        const report = await fetchLecturerMissingAndSuspendedMarks();
+        const fiveReports = report.enrichedMissingMarks.slice(0,4);
         setReports(fiveReports);
       }catch(error){
         console.error("Error fetching missing marks reports", error);

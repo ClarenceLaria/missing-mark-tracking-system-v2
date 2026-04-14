@@ -369,7 +369,7 @@ export async function fetchLecturerMissingMarksTotals(){
 
 }
 
-export async function fetchLecturerMissingMarks(){
+export async function fetchLecturerMissingAndSuspendedMarks(){
     try{
         const session = await getServerSession(authOptions);
         const email = session?.user?.email!;
@@ -420,7 +420,7 @@ export async function fetchLecturerMissingMarks(){
             },
         })
 
-        const enrichedReports = reports.map((report) => {
+        const enrichedMissingMarks = reports.map((report) => {
         const isRegistered = report.unit.registeredUnits.some(
             (reg) => reg.registration.studentId === report.student.id
         );
@@ -431,7 +431,40 @@ export async function fetchLecturerMissingMarks(){
         };
         });
 
-        return enrichedReports;
+        const suspendedMarks = await prisma.suspendedExamMark.findMany({
+            where: {
+                unitId: {
+                    in: unitIds
+                }
+            },
+            include:{
+                unit:{
+                    select:{ 
+                        unitCode: true, 
+                        unitName: true,
+                        registeredUnits: {
+                            select: {
+                                registration: {
+                                    select: {
+                                        studentId: true,
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                student: {
+                    select:{
+                        id: true,
+                        regNo: true,
+                        firstName: true,
+                        secondName: true,
+                    }
+                },
+            },
+        })
+
+        return {enrichedMissingMarks, suspendedMarks};
     }catch(error){
         console.error("Error fetching missing marks:", error)
         throw new Error("Could not fetch missing marks")
