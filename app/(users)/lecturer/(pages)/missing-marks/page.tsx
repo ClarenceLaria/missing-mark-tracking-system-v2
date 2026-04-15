@@ -22,6 +22,7 @@ import { fetchLecturerMissingAndSuspendedMarks } from '@/app/lib/actions';
 import { ExamSuspensionStatus, ExamType, ReportStatus, ResolutionNote, Semester } from '@/app/generated/prisma/enums';
 import Loader from '@/app/components/Loader';
 import SingleMissingMarkDialog from "@/app/components/lecturer/single-missing-mark-dialog";
+import { Select, SelectContent, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 
 const Loading = () => <div>Loading...</div>;
 interface MissingReport {
@@ -88,6 +89,13 @@ export default function Page() {
     const [open, setOpen] = useState(false);
     const [selectedReport, setSelectedReport] = useState<MissingReport | null>(null);
 
+    const [filters, setFilters] = useState({
+      markType: "ALL", // MISSING or SUSPENDED
+      reason: "ALL", 
+      status: "ALL",
+      date: null as Date | null,
+    });
+
     useEffect(() => {
         const handleReports = async () => {
             try{
@@ -140,10 +148,13 @@ export default function Page() {
           report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           report.unitCode.toLowerCase().includes(searchTerm.toLowerCase());
     
-          const matchesDate = 
-          !searchDate || report.date.toDateString() === searchDate.toDateString();
-    
-          return matchesSearchTerm && matchesDate;
+          const matchesFilters =
+            (!filters.markType || filters.markType === "ALL" || report.type === filters.markType) &&
+            (!filters.status || filters.status === "ALL" || report.status === filters.status) &&
+            (!filters.reason || filters.reason === "ALL" || report.reason === filters.reason) &&
+            (!filters.date || report.date.toDateString() === filters.date.toDateString());
+
+          return matchesSearchTerm && matchesFilters;
       });
   return (
     <div className="space-y-6">
@@ -161,6 +172,100 @@ export default function Page() {
           ></Search>            
         </Suspense>
       </div>
+    </div>
+
+    {/* Filters */}
+    <div className="flex flex-wrap gap-3 mb-4">
+      {/* Mark Type */}
+      <Select
+      value={filters.markType}
+        onValueChange={(value) =>
+          setFilters((f) => ({ ...f, markType: value }))
+        }
+      >
+        <SelectTrigger className="w-45">
+          <SelectValue placeholder="All Types" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="ALL">All Types</SelectItem>
+          <SelectItem value="MISSING">Missing</SelectItem>
+          <SelectItem value="SUSPENDED">Suspended</SelectItem>
+        </SelectContent>
+      </Select>
+
+      {/* Status */}
+      <Select
+        value={filters.status}
+        onValueChange={(value) =>
+          setFilters((f) => ({ ...f, status: value }))
+        }
+      >
+        <SelectTrigger className="w-45">
+          <SelectValue placeholder="All Status" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="ALL">All Status</SelectItem>
+          <SelectItem value="RESOLVED">Resolved</SelectItem>
+          <SelectItem value="PENDING">Pending</SelectItem>
+          <SelectItem value="OVERRIDDEN">Overriden</SelectItem>
+          <SelectItem value="SUSPENDED">Suspended</SelectItem>
+          <SelectItem value="RELEASED">Released</SelectItem>
+        </SelectContent>
+      </Select>
+
+      {/* Reason */}
+      <Select
+        value={filters.reason}
+        onValueChange={(value) =>
+          setFilters((f) => ({ ...f, reason: value }))
+        }
+      >
+        <SelectTrigger className="w-55">
+          <SelectValue placeholder="All Reasons" />
+        </SelectTrigger>
+
+        <SelectContent>
+          <SelectItem value="ALL">All Reasons</SelectItem>
+          <SelectItem value="MISSING_CAT">Missing CAT</SelectItem>
+          <SelectItem value="MISSING_EXAM">Missing Exam</SelectItem>
+          <SelectItem value="MISSING_CAT_AND_EXAM">
+            Missing CAT & Exam
+          </SelectItem>
+          <SelectItem value="FEES_NOT_CLEARED">
+            Fees Not Cleared
+          </SelectItem>
+          <SelectItem value="DID_NOT_REGISTER">
+            Not Registered
+          </SelectItem>
+        </SelectContent>
+      </Select>
+
+      {/* Date */}
+      <input
+        type="date"
+        className="border border-input bg-background rounded-md px-3 py-2 text-sm"
+        onChange={(e) =>
+          setFilters((f) => ({
+            ...f,
+            date: e.target.value ? new Date(e.target.value) : null,
+          }))
+        }
+      />
+
+      {/* Reset */}
+      <Button
+        variant="outline"
+        onClick={() =>
+          setFilters({
+            markType: "ALL",
+            reason: "ALL",
+            status: "ALL",
+            date: null,
+          })
+        }
+      >
+        Reset
+      </Button>
     </div>
 
     <Card>

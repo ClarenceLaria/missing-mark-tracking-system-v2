@@ -7,7 +7,6 @@ import { fetchLecturerUnits } from "@/app/lib/actions";
 import { AlertCircle, FileSpreadsheet, Plus, Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { set } from "zod";
 
 type Unit = {
   id: number;
@@ -25,6 +24,7 @@ export default function UploadMarksPage() {
   const [unitId, setUnitId] = useState<string>("");
   const [units, setUnits] = useState<Unit[]>([]);
   const [openSingle, setOpenSingle] = useState(false);
+  const [disabled, setDisabled] = useState(false);
 
   useEffect(() => {
     const fetchUnits = async () => {
@@ -53,6 +53,7 @@ export default function UploadMarksPage() {
     formData.append("examType", examType);
 
     try{
+      setDisabled(true);
       toast.loading("Uploading marks...");
       const res = await fetch("/api/upload-marks", {
         method: "POST",
@@ -73,6 +74,8 @@ export default function UploadMarksPage() {
     } catch (error) {
       console.error("Error uploading marks:", error);
       toast.error("Server error");
+    } finally {
+      setDisabled(false);
     }
   };
 
@@ -114,7 +117,7 @@ export default function UploadMarksPage() {
                 onChange={(e) =>
                   setExamType(e.target.value as ExamType)
                 }
-                className="w-full rounded-lg border px-3 py-2 text-sm"
+                className="w-full bg-card rounded-lg border px-3 py-2 text-sm"
               >
                 <option value="">Select exam type</option>
 
@@ -134,7 +137,7 @@ export default function UploadMarksPage() {
               <select
                 value={unitId}
                 onChange={(e) => setUnitId(e.target.value)}
-                className="w-full rounded-lg border px-3 py-2 text-sm"
+                className="w-full bg-card rounded-lg border px-3 py-2 text-sm"
               >
                 <option value="">Select unit</option>
                 {units.map((unit) => (
@@ -215,6 +218,7 @@ export default function UploadMarksPage() {
 
             <Button 
               onClick={handleSubmit}
+              disabled={disabled}
               type="submit"
             ><Upload className="h-4 w-4" />
               Upload Marks
